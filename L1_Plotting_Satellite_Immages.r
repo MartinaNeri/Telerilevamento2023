@@ -5,6 +5,8 @@ install.packages("raster")
 library(raster)
 setwd("C:/lab/p224r63_2011")
 
+#The raster package is used to write, read, manipulate, analyze and model spatial data
+
 # Import the data with the function brick()
 image_2011 <- brick("p224r63_2011_masked.grd")
 
