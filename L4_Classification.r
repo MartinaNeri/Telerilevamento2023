@@ -49,6 +49,14 @@ sun_class <- setValues(sun[[1]], k_cluster$cluster) # Assign new value to a
 # Plot using a colour palette
 cl_1 <- colorRampPalette(c("yellow","black","red"))(100)
 plot(sun_class, col=cl_1)
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH SISTEMAAAAA# classe nera = intermedia
+# classe gialla = a più bassa energia
+# in realtà ogni persona che ha usato il codice ottiene mappe diverse a livello di colori
+# perchè l'algoritmo raggruppa in modo casuale i pixel dell'immagine nelle 3 categorie che abbiamo impostato,
+# prendendo casualmente 10000 pixel sul totale dei pixel dell'immagine (7669050 pixel) ma in maniera diversa ogni volta che viene utilizzato.
+# L'algoritmo mantiene però il pattern spaziale dell'immagine (se il numero di categorie in cui è stata divisa rimane lo stesso)
+
+
 
 # Class 1: highest energy level
 # Class 2: medium energy level
