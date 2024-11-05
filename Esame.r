@@ -1,4 +1,3 @@
-
 #https://www.globalforestwatch.org/dashboards/country/ROU/27/15/?map=eyJjYW5Cb3VuZCI6dHJ1ZX0%3D
 
 # Installazione dei packages necessari
