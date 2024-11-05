@@ -1,0 +1,169 @@
+\documentclass{beamer}
+\usepackage{graphicx} % Required for inserting images
+
+\title{Presentazione_esame_telerilevamento}
+\author{martina neri}
+\date{November 2024}
+
+\begin{document}
+
+
+\section{Introduction}
+
+\documentclass{beamer}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{caption}
+
+\setlength{\abovecaptionskip}{5pt}
+
+\usetheme{metropolis}
+
+% Personalizzazione dei colori
+\definecolor{verdescuro}{RGB}{34, 87, 45}
+\definecolor{bianco}{RGB}{255, 255, 255}
+\setbeamercolor{frametitle}{bg=verdescuro}
+\setbeamercolor{alerted text}{fg=bianco}
+
+% Imposta il font predefinito su Helvetica
+\renewcommand{\familydefault}{\sfdefault}
+
+\title{\textbf{Analisi della Deforestazione in Romania}}
+\subtitle{Studio mediante Telerilevamento 2017-2024}
+\author{Analisi Satellitare}
+%\date{}
+
+\begin{document}
+\maketitle
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents
+\end{frame}
+
+% Sezione 1: introduzione
+\section{Introduzione}
+
+\begin{frame}{\textbf{Scopo dello studio}}
+Monitoraggio della deforestazione nell'area di Bălan, Romania, attraverso l'analisi di immagini satellitari \textbf{Sentinel-2} nel periodo 2017-2024
+\end{frame}
+
+\begin{frame}{\textbf{Obiettivi}}
+\begin{itemize}
+    \item Acquisizione e analisi di immagini \textbf{Sentinel-2} (2017-2024)
+    \item \pause Calcolo di \textbf{indici spettrali} tramite R
+    \item \pause Analisi delle variazioni della copertura forestale
+    \item \pause Quantificazione della perdita di vegetazione
+\end{itemize}
+\end{frame}
+
+% Sezione 2: materiali e metodi
+\section{Materiali e Metodi}
+
+\begin{frame}{\textbf{Materiali e Metodi}}
+\begin{itemize}
+    \item Download e preprocessing delle immagini \textbf{Sentinel-2}
+    \item \pause Calcolo degli \textbf{indici spettrali}:
+    \begin{itemize}
+        \item DVI (Difference Vegetation Index)
+        \item NDVI (Normalized Difference Vegetation Index)
+        \item EVI (Enhanced Vegetation Index)
+    \end{itemize}
+    \item \pause Analisi \textbf{PCA} (Principal Component Analysis)
+    \item \pause Analisi statistica (\textbf{T-test})
+    \item \pause Classificazione della \textbf{Land Cover}
+\end{itemize}
+\end{frame}
+
+\section{Risultati}
+
+\subsection{Analisi degli Indici Spettrali}
+
+\begin{frame}{\textbf{NDVI: Normalized Difference Vegetation Index}}
+\begin{itemize}
+    \item Formula: $NDVI = \frac{NIR - Red}{NIR + Red}$
+    \item \pause Varia da -1 a +1
+    \item \pause Valori più alti indicano vegetazione più sana
+    \item \pause Perdita significativa rilevata:
+    \begin{itemize}
+        \item Numero di pixel con perdita: \textbf{87,475}
+        \item Percentuale area interessata: \textbf{2.08\%}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\textbf{Enhanced Vegetation Index (EVI)}}
+\begin{equation}
+EVI = G \times \frac{NIR - Red}{NIR + C1 \times Red - C2 \times Blue + L}
+\end{equation}
+Dove:
+\begin{itemize}
+    \item G = 2.5 (fattore di guadagno)
+    \item C1 = 6
+    \item C2 = 7.5
+    \item L = 1 (fattore di correzione del suolo)
+\end{itemize}
+\end{frame}
+
+\subsection{Analisi PCA}
+
+\begin{frame}{\textbf{Principal Component Analysis}}
+\begin{itemize}
+    \item Riduzione della dimensionalità dei dati
+    \item \pause Identificazione delle aree con maggior variazione
+    \item \pause Risultati:
+    \begin{itemize}
+        \item PC1: evidenzia le zone di maggior cambiamento
+        \item \pause Campionamento casuale di 10,000 punti
+        \item \pause Validazione statistica tramite T-test
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\subsection{Land Cover Analysis}
+
+\begin{frame}{\textbf{Analisi della Copertura del Suolo}}
+Classificazione binaria:
+\begin{itemize}
+    \item Copertura vegetale \textbf{buona}
+    \item Copertura vegetale \textbf{ridotta/assente}
+\end{itemize}
+\pause
+Metodologia:
+\begin{itemize}
+    \item Clustering K-means (k=2)
+    \item \pause Calcolo delle frequenze e percentuali
+    \item \pause Confronto temporale 2017-2024
+\end{itemize}
+\end{frame}
+
+\section{Conclusioni}
+
+\begin{frame}{\textbf{Conclusioni}}
+\begin{itemize}
+    \item Perdita significativa di copertura forestale (\textbf{2.08\%} dell'area)
+    \item \pause L'analisi PCA ha evidenziato i pattern di deforestazione
+    \item \pause Il T-test conferma la significatività statistica dei cambiamenti
+    \item \pause Necessità di monitoraggio continuo e misure di conservazione
+\end{itemize}
+\end{frame}
+
+\begin{frame}{\textbf{Prospettive Future}}
+\begin{itemize}
+    \item Estensione dell'analisi ad altre aree della Romania
+    \item \pause Integrazione con dati socio-economici
+    \item \pause Sviluppo di un sistema di early warning
+    \item \pause Supporto alle politiche di conservazione forestale
+\end{itemize}
+\end{frame}
+
+\begin{frame}{}
+\centering
+\textbf{Grazie per l'attenzione!}
+\end{frame}
+
+\end{document}
+
+\end{document}
+
+
