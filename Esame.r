@@ -1,8 +1,9 @@
+
 #https://www.globalforestwatch.org/dashboards/country/ROU/27/15/?map=eyJjYW5Cb3VuZCI6dHJ1ZX0%3D
 
 # Installazione dei packages necessari
-install.packages("raster")  # To work with raster images - functions like 'raster', 'stack', 'crop', 'plotRGB', 'plot', 'values', 'focal', 'aggregate', 'rasterPCA'
-install.packages("ggplot2") # To make plots - functions like 'ggplot2', 'geom_bar', 'labs', 'scale_fill_manual', 'geom_text', 'theme_minimal' 
+install.packages("raster")  # To work with raster images - functions like 'raster', 'stack', 'crop', 'plotRGB', 'plot', 'values'
+install.packages("ggplot2") # To make plots - functions like 'ggplot2', 'geom_bar', 'labs'
 install.packages("patchwork") # To easily pair plots
 install.packages("viridis") # To plot images and graphs with color blind friendly palettes
 install.packages("RStoolbox") # for rasterPCA function
@@ -14,10 +15,12 @@ library(patchwork)
 library(viridis)
 library(RStoolbox)
 
-# Impostare la working directory
+# Imposto la working directory
 setwd("C:/lab/Esame_telerilevamento")
 
 #Bălan, Romania
+
+#le bande delle immagini satellitari (Sentinel-2) scaricate da Copernicus browser sono:
 #B2 - Blue  [1]
 #B3 - Green [2]
 #B4 - Red   [3]
@@ -26,7 +29,11 @@ setwd("C:/lab/Esame_telerilevamento")
 #B11 - SWIR [6]
 #B12 - SWIR [7]
 
-### IMMAGINI 2017
+##### 1. CARICO LE IMMAGINI #####
+
+#2017
+#Carico le immagini con rlist selezionando tutti i file che contengono "2017-09-01" nel nome
+
 rlist_2017 <- list.files(pattern = "2017-09-01")
 rlist_2017
 
@@ -34,15 +41,18 @@ rlist_2017
 import_2017 <- lapply(rlist_2017, raster)
 import_2017
 
-# Unione di tutte le bande presenti nella lista in un solo oggetto
+# Unisco tutte le bande presenti nella lista in un solo oggetto
 img_2017 <- stack(import_2017)
 
 # Visualizzo le informazioni
 img_2017
 
+#plotto le bande caricate
 plot(img_2017)
+dev.off()
 
 #2024
+#Eseguo lo stesso procedimento per le bande dell'immagine del 2024
 
 rlist_2024 <- list.files(pattern = "2024-08-25")
 rlist_2024
@@ -55,8 +65,12 @@ img_2024 <- stack(import_2024)
 img_2024
 
 plot(img_2024)
+dev.off()
 
-# Plot e salvataggio in PDF
+# Plot e salvataggio in PDF delle immagini sia con sia in colori veri (RGB naturale)
+#sia a falsi colori, dove l’infrarosso vicino (NIR) sostituisce il canale rosso,
+#mettondo in risalto la vegetazione.
+
 pdf("img_2017.pdf")
 par(mfrow = c(1, 2))
 plotRGB(img_2017, 3, 2, 1, stretch = "lin")
@@ -69,7 +83,7 @@ plotRGB(img_2024, 3, 2, 1, stretch = "lin")
 plotRGB(img_2024, 4, 3, 2, stretch = "lin")
 dev.off()
 
-#Pot per tipo
+#Pot per tipo di immagini
 par(mfrow = c(1, 2))
 plotRGB(img_2017, 3, 2, 1, stretch = "lin")
 plotRGB(img_2024, 3, 2, 1, stretch = "lin")
@@ -80,21 +94,30 @@ plotRGB(img_2017, 4, 3, 2, stretch = "lin")
 plotRGB(img_2024, 4, 3, 2, stretch = "lin")
 dev.off()
 
-#### 2. Calcolo degli indici spettrali ####
+##### 2. CALCOLO INDICI SPETTRALI #####
 
-# 2.1 Calcolo del DVI (Differenza Vegetazione) per 2017 e 2024
+# 2.1 Calcolo del DVI (Difference Vegetation Index)
+
+#Calcola la differenza tra la banda dell’infrarosso vicino (NIR) e la banda 
+#rossa per identificare la densità di vegetazione.
+
 DVI_2017 <- img_2017[[4]] - img_2017[[3]]  # NIR - Rosso
 DVI_2024 <- img_2024[[4]] - img_2024[[3]]
-DVI_fin <- DVI_2024 - DVI_2017
+DVI_fin <- DVI_2024 - DVI_2017 # Differenza nella densità di vegetazione tra 2024 e 2017
 
 # Visualizzazione del DVI
 viridis_palette <- colorRampPalette(viridis(7))(255)  # Colore per DVI
-par(mfrow = c(1, 2))
+par(mfrow = c(1, 3))
 plot(DVI_2017, col = viridis_palette, main = "DVI 2017")
 plot(DVI_2024, col = viridis_palette, main = "DVI 2024")
+plot(DVI_fin, col = viridis_palette, main = "differenza DVI")
 dev.off()
 
-# 2.2 Calcolo del NDVI per il 2017 e il 2024
+# 2.2 Calcolo del NDVI (Normalized Difference Vegetation Index)
+# L'NDVI è calcolato come il rapporto normalizzato tra (NIR - RED) e (NIR + RED), 
+# risultando in una scala che va da -1 a 1.
+# Permette di confrontare la vegetazione su aree e periodi differenti, correggendo le variazioni dovute alle condizioni atmosferiche e alle caratteristiche del suolo.
+
 NDVI_2017 <- DVI_2017 / (img_2017[[4]] + img_2017[[3]])
 NDVI_2024 <- DVI_2024 / (img_2024[[4]] + img_2024[[3]])
 
@@ -104,14 +127,18 @@ plot(NDVI_2017, col = viridis_palette, main = "NDVI 2017")
 plot(NDVI_2024, col = viridis_palette, main = "NDVI 2024")
 dev.off()
 
-#### Calcolo della perdita di copertura vegetale ####
+#### Calcolo della perdita di copertura vegetale tramite NDVI####
 
 # Parametri di input
 soglia <- -0.2
+#Soglia per la perdita di NDVI: Un valore di -0,2 identifica una perdita significativa.
 ndvi_iniziale <- NDVI_2017
 ndvi_finale <- NDVI_2024
 
 # Calcolo della differenza NDVI tra l'anno iniziale e l'anno finale
+# Il codice identifica i pixel con valori di NDVI che scendono sotto 
+#al valore soglia e li conta.
+
 differenza_ndvi <- ndvi_finale - ndvi_iniziale
 
 # Identificazione dei pixel con perdita significativa
@@ -144,7 +171,13 @@ print(perdita_2017_2024)
 #quindi più del 2% dell'area totale monitorata ha subito una perdita 
 #significativa di vegetazione tra il 2017 e il 2018.
 
-#### 3. Calcolo e visualizzazione EVI e differenza ####
+
+##### 2.3 Calcolo dell'EVI (Enhanced Vegetation Index)
+
+#L’EVI è un indice avanzato che migliora l’NDVI, riducendo gli effetti atmosferici 
+#e aumentando la sensibilità nelle aree con vegetazione densa. Viene calcolato 
+#considerando non solo le bande NIR e RED ma anche la banda BLU.
+
 
 # Definisco i coefficienti per l'EVI
 C1 <- 6
@@ -168,7 +201,8 @@ plot(EVI_2024, col = viridis_palette, main = "EVI 2024")
 plot(EVI_diff, col = viridis_palette, main = "Differenza EVI 2017-2024")
 dev.off()
 
-#### 4. Analisi PCA delle differenze NDVI e DVI ####
+#### 3. PCA (Analisi delle Componenti Principali) ####
+# Evidenzia variazioni strutturali nei dati, permettendo di ridurre la complessità del dataset.
 
 # Imposta il seme per la riproducibilità
 set.seed(1)
@@ -220,17 +254,20 @@ ggplot() +
   labs(title = "Prima Componente Principale (PC1)", x = "Longitude", y = "Latitude")
 dev.off()
 
-#### 5. T-test sui valori NDVI ####
+#### 4. T-TEST SUI VALORI DI NDVI ####
+#Permette di verificare se c’è una differenza statisticamente significativa nei valori di NDVI tra 2017 e 2024.
 
 # Estrazione dei valori NDVI come vettori
 ndvi_2017_values <- values(NDVI_2017)
 ndvi_2024_values <- values(NDVI_2024)
 
+#Un cambiamento statisticamente significativo nell'NDVI potrebbe suggerire un 
+#impatto ecologico rilevante, come una riduzione significativa della copertura vegetale. 
 # Esecuzione del T-test sui valori NDVI tra 2017 e 2024
 t_test_result <- t.test(ndvi_2017_values, ndvi_2024_values, paired = TRUE)
 print(t_test_result)
 
-##### 6.  LAND COVER ANALYSIS 
+##### 5.  LAND COVER ANALYSIS 
 
 # Crea una palette colori per le classi
 cl_freq <- colorRampPalette(c("blue", "yellow"))(2)
@@ -256,11 +293,11 @@ perc_2024 <- round((freq_2024 * 100) / ncell(img_2024_class), digits = 5)
 copertura_vegetale <- c("Buona", "Ridotta/Assente")
 Land_cover_perc <- data.frame(
   copertura_vegetale, 
-  P_2017 = perc_2014[,2],
+  P_2017 = perc_2017[,2],
   P_2024 = perc_2024[,2]
 )
 print(Land_cover_perc)
-
+#Segmenta l’immagine in due classi (vegetazione buona vs vegetazione ridotta/assente).
 # Plot delle percentuali di copertura per ogni anno e salvataggio in PDF
 cl_barplot <- c("Buona" = "blue", "Ridotta/Assente" = "yellow")
 pdf("Land_Cover_Percentages.pdf")
@@ -278,48 +315,8 @@ for (year in names(Land_cover_perc)[2:7]) {
 dev.off()
 
 
-################################ 6. LAND COVER #################################
 
-### CLASSIFICAZIONE IMMAGINI 2017
 
-# Estrazione dei valori dalle immagini del 2017
-single_nr_2017 <- getValues(img_2017)
-
-# Classificazione
-k_cluster_2017 <- kmeans(single_nr_2017, centers = 2)
-
-# Set dei valori
-img_2017_class <- setValues(img_2017[[1]], k_cluster_2017$cluster)
-
-# Plot
-cl_freq <- colorRampPalette(c("blue", "yellow"))(2)
-plot(img_2017_class, col = cl_freq, main = "Classificazione Land Cover 2017")
-
-# Calcolo delle frequenze
-freq_2017 <- freq(img_2017_class)
-
-# Calcolo delle percentuali
-perc_2017 <- round((freq_2017 * 100) / ncell(img_2017_class), digits = 5)
-
-### CLASSIFICAZIONE IMMAGINI 2024
-
-# Estrazione dei valori dalle immagini del 2024
-single_nr_2024 <- getValues(img_2024)
-
-# Classificazione
-k_cluster_2024 <- kmeans(single_nr_2024, centers = 2)
-
-# Set dei valori
-img_2024_class <- setValues(img_2024[[1]], k_cluster_2024$cluster)
-
-# Plot
-plot(img_2024_class, col = cl_freq, main = "Classificazione Land Cover 2024")
-
-# Calcolo delle frequenze
-freq_2024 <- freq(img_2024_class)
-
-# Calcolo delle percentuali
-perc_2024 <- round((freq_2024 * 100) / ncell(img_2024_class), digits = 5)
 
 ### VISUALIZZAZIONE DEI RISULTATI
 
