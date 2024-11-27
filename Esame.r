@@ -29,6 +29,12 @@ setwd("C:/lab/Esame_telerilevamento")
 #B11 - SWIR [6]
 #B12 - SWIR [7]
 
+#viridis: sfumature dal blu al verde-giallo.
+#plasma: sfumature dal blu scuro al rosso-giallo.
+#magma: sfumature dal viola al rosso-arancio.
+#cividis: ottimizzata per persone con deuteranopia e protanopia.
+
+
 ##### 1. CARICO LE IMMAGINI #####
 
 #2017
@@ -71,17 +77,17 @@ dev.off()
 #sia a falsi colori, dove l’infrarosso vicino (NIR) sostituisce il canale rosso,
 #mettondo in risalto la vegetazione.
 
-pdf("img_2017.pdf")
+#pdf("img_2017.pdf")
 par(mfrow = c(1, 2))
 plotRGB(img_2017, 3, 2, 1, stretch = "lin")
 plotRGB(img_2017, 4, 3, 2, stretch = "lin")
 dev.off()
 
-pdf("img_2024.pdf")
-par(mfrow = c(1, 2))
-plotRGB(img_2024, 3, 2, 1, stretch = "lin")
+#pdf("img_2024.pdf")
+par(mfrow = c(1, 2)) ###################non so se ha senso ggrgb
+ggRGB(img_2024, 3, 2, 1, stretch = "lin")
 plotRGB(img_2024, 4, 3, 2, stretch = "lin")
-dev.off()
+#dev.off()
 
 #Pot per tipo di immagini
 par(mfrow = c(1, 2))
@@ -107,11 +113,24 @@ DVI_fin <- DVI_2024 - DVI_2017 # Differenza nella densità di vegetazione tra 20
 
 # Visualizzazione del DVI
 viridis_palette <- colorRampPalette(viridis(7))(255)  # Colore per DVI
+color <- pal_viridis(option = "plasma")(7)
+
+
 par(mfrow = c(1, 3))
 plot(DVI_2017, col = viridis_palette, main = "DVI 2017")
 plot(DVI_2024, col = viridis_palette, main = "DVI 2024")
 plot(DVI_fin, col = viridis_palette, main = "differenza DVI")
 dev.off()
+
+#DVI_2017: Ogni area con colori verso il viola rappresenta un valore di DVI più 
+#basso per il 2017, mentre le aree tendenti al giallo indicano valori DVI più 
+#alti per lo stesso anno.
+#DVI_2024: Stessa logica per il 2024. Si possono notare le differenze nei livelli 
+#rispetto al 2017, dato che le aree gialle potrebbero essersi espanse o ridotte.
+#DVI_fin: Questo grafico rappresenta la "differenza DVI". Qui, il giallo indica 
+#un aumento dei valori di DVI nel periodo (2017-2024), mentre le aree viola scure 
+#rappresentano una diminuzione. I toni intermedi mostrano cambiamenti minori.
+
 
 # 2.2 Calcolo del NDVI (Normalized Difference Vegetation Index)
 # L'NDVI è calcolato come il rapporto normalizzato tra (NIR - RED) e (NIR + RED), 
@@ -120,12 +139,16 @@ dev.off()
 
 NDVI_2017 <- DVI_2017 / (img_2017[[4]] + img_2017[[3]])
 NDVI_2024 <- DVI_2024 / (img_2024[[4]] + img_2024[[3]])
+NDVI_dif <- NDVI_2024 - NDVI_2017
 
 # Visualizzazione del NDVI
-par(mfrow = c(1, 2))
+par(mfrow = c(1, 3))
 plot(NDVI_2017, col = viridis_palette, main = "NDVI 2017")
 plot(NDVI_2024, col = viridis_palette, main = "NDVI 2024")
+plot(NDVI_dif, col = viridis_palette, main = "Differenza tra NDVI 2024 e 2017")
 dev.off()
+
+#stessa logica della lettura dei grafici del DVI
 
 #### Calcolo della perdita di copertura vegetale tramite NDVI####
 
@@ -171,36 +194,6 @@ print(perdita_2017_2024)
 #quindi più del 2% dell'area totale monitorata ha subito una perdita 
 #significativa di vegetazione tra il 2017 e il 2018.
 
-
-##### 2.3 Calcolo dell'EVI (Enhanced Vegetation Index)
-
-#L’EVI è un indice avanzato che migliora l’NDVI, riducendo gli effetti atmosferici 
-#e aumentando la sensibilità nelle aree con vegetazione densa. Viene calcolato 
-#considerando non solo le bande NIR e RED ma anche la banda BLU.
-
-
-# Definisco i coefficienti per l'EVI
-C1 <- 6
-C2 <- 7.5
-L <- 1
-G <- 2.5  # Fattore di guadagno
-
-# Calcolo dell'EVI per il 2017
-EVI_2017 <- G * ((img_2017[[4]] - img_2017[[3]]) / (img_2017[[4]] + C1 * img_2017[[3]] - C2 * img_2017[[1]] + L))
-
-# Calcolo dell'EVI per il 2024
-EVI_2024 <- G * ((img_2024[[4]] - img_2024[[3]]) / (img_2024[[4]] + C1 * img_2024[[3]] - C2 * img_2024[[1]] + L))
-
-# Calcolo della differenza EVI tra 2017 e 2024
-EVI_diff <- EVI_2024 - EVI_2017
-
-# Visualizzazione EVI
-par(mfrow = c(1, 3))
-plot(EVI_2017, col = viridis_palette, main = "EVI 2017")
-plot(EVI_2024, col = viridis_palette, main = "EVI 2024")
-plot(EVI_diff, col = viridis_palette, main = "Differenza EVI 2017-2024")
-dev.off()
-
 #### 3. PCA (Analisi delle Componenti Principali) ####
 # Evidenzia variazioni strutturali nei dati, permettendo di ridurre la complessità del dataset.
 
@@ -215,7 +208,7 @@ DVI_diff <- DVI_2024 - DVI_2017
 box <- stack(NDVI_diff, DVI_diff)
 
 # Traccia il grafico delle differenze per capire la variazione tra i due anni
-plot(box, col = viridis_palette, main = "Differenze degli indici NDVI e DVI tra 2017 e 2024")
+plot(box, col = color, main = "Differenze degli indici NDVI e DVI tra 2017 e 2024")
 dev.off()
 
 #  Campionamento casuale di punti dal raster "box" per accelerare l'analisi PCA
@@ -234,7 +227,7 @@ plot(pca)
 pci <- predict(box, pca, index = 1:2)
 
 #Visualizza la prima componente principale per vedere dove la variazione è maggiore
-plot(pci[[1]], col = viridis, main = "Prima Componente Principale (PC1) - 2017 vs 2024")
+plot(pci[[1]], col = color, main = "Prima Componente Principale (PC1) - 2017 vs 2024")
 
 #Converti la prima componente principale in data frame con coordinate x, y per ggplot
 pc_final <- as.data.frame(pci[[1]], xy = TRUE)
@@ -267,55 +260,31 @@ ndvi_2024_values <- values(NDVI_2024)
 t_test_result <- t.test(ndvi_2017_values, ndvi_2024_values, paired = TRUE)
 print(t_test_result)
 
+
 ##### 5.  LAND COVER ANALYSIS 
 
 # Crea una palette colori per le classi
-cl_freq <- colorRampPalette(c("blue", "yellow"))(2)
+cl_freq <- colorRampPalette(c("black", "grey", "white"))(3)
 
 # Per ogni anno, estrae i valori delle bande, classifica con k-means, calcola le frequenze e percentuali
 # 2017
 single_nr_2017 <- getValues(img_2017)
-k_cluster_2017 <- kmeans(single_nr_2017, centers = 2)
-img_2017_class <- setValues(img_2017[[1]], k_cluster_2017$cluster)
-plot(img_2017_class, col = cl_freq)
-freq_2017 <- freq(img_2017_class)
-perc_2017 <- round((freq_2017 * 100) / ncell(img_2017_class), digits = 5)
-
-# 2024
+  
 single_nr_2024 <- getValues(img_2024)
-k_cluster_2024 <- kmeans(single_nr_2024, centers = 2)
+k_cluster_2024 <- kmeans(single_nr_2024, centers = 3)
 img_2024_class <- setValues(img_2024[[1]], k_cluster_2024$cluster)
 plot(img_2024_class, col = cl_freq)
 freq_2024 <- freq(img_2024_class)
 perc_2024 <- round((freq_2024 * 100) / ncell(img_2024_class), digits = 5)
 
 # Consolidare i dati in un DataFrame
-copertura_vegetale <- c("Buona", "Ridotta/Assente")
+copertura_vegetale <- c("Buona", "Ridotta", "Assente")
 Land_cover_perc <- data.frame(
   copertura_vegetale, 
   P_2017 = perc_2017[,2],
   P_2024 = perc_2024[,2]
 )
 print(Land_cover_perc)
-#Segmenta l’immagine in due classi (vegetazione buona vs vegetazione ridotta/assente).
-# Plot delle percentuali di copertura per ogni anno e salvataggio in PDF
-cl_barplot <- c("Buona" = "blue", "Ridotta/Assente" = "yellow")
-pdf("Land_Cover_Percentages.pdf")
-
-for (year in names(Land_cover_perc)[2:7]) {
-  ggplot(Land_cover_perc, aes(x = copertura_vegetale, y = Land_cover_perc[[year]], fill = copertura_vegetale)) +
-    geom_bar(stat = "identity") +
-    scale_fill_manual(values = cl_barplot) +
-    labs(x = "Land Cover", y = "%", title = paste("Land Cover", year)) +
-    theme(legend.position = "none") +
-    ylim(0, 100) +
-    geom_text(aes(label = sprintf("%.2f%%", Land_cover_perc[[year]]), y = Land_cover_perc[[year]]),
-              position = position_stack(vjust = 0.5), size = 4)
-}
-dev.off()
-
-
-
 
 
 ### VISUALIZZAZIONE DEI RISULTATI
@@ -326,7 +295,6 @@ perc_2024  # Visualizzazione delle percentuali di copertura per il 2024
 ### CREAZIONE DI UN DATAFRAME CON I RISULTATI DELLA CLASSIFICAZIONE
 
 # Creazione dei vettori
-copertura_vegetale <- c("buona", "ridotta/assente")
 P_2017 <- perc_2017[,2]
 P_2024 <- perc_2024[,2]
 
@@ -342,7 +310,7 @@ print(Land_cover_perc)
 
 ### PLOTE DELLE PERCENTUALI DI LAND COVER + ESPORTAZIONE IN .pdf
 
-cl_barplot <- c("buona" = "blue", "ridotta/assente" = "yellow")
+cl_barplot <- c("buona" = "blue", "ridotta" = "darkgreen", "assente" = "yellow")
 
 # Creazione di un PDF per le percentuali di copertura del 2017 e 2024
 pdf("Land_Cover_Percentages.pdf")
@@ -368,3 +336,79 @@ ggplot(Land_cover_perc, aes(x = copertura_vegetale, y = P_2024, fill = copertura
             position = position_stack(vjust = 0.5), size = 4)
 
 dev.off()
+
+
+
+
+
+# Analisi dell'eterogeneità per visualizzare i pattern spaziali
+# A maggior variabilità corrisponde maggior biodiversità.
+
+# Si estrae da ogni immagine la banda del NIR (banda 4)
+nir_2017 <- img_2017[[4]]
+nir_2024 <- img_2024[[4]]
+
+# Finestra mobile: matrice 3x3 che si sposta sull'immagine, calcola la deviazione standard
+# Tre nuovi file raster che esprimono la variabilità per ciascun anno.
+sd_2017 <- focal(nir_2017, matrix(1/9, 3, 3), fun = sd)
+sd_2024 <- focal(nir_2024, matrix(1/9, 3, 3), fun = sd)
+
+ # Plot Eterogeneità con ggplot
+et_2017 <- ggplot() +
+  geom_raster(data = as.data.frame(sd_2017, xy = TRUE), aes(x = x, y = y, fill = layer), show.legend = FALSE) +
+  scale_fill_viridis(option = "plasma") +
+  ggtitle("2017")
+
+et_2024 <- ggplot() +
+  geom_raster(data = as.data.frame(sd_2024, xy = TRUE), aes(x = x, y = y, fill = layer), show.legend = TRUE) +
+  scale_fill_viridis(option = "plasma", name = "Variabilità") +
+  ggtitle("2024")
+
+# Patchwork per visualizzare i due anni
+patchwork_heterogeneity <- et_2017 + et_2024
+patchwork_heterogeneity + plot_annotation(
+  title = 'Land heterogeneity',
+  subtitle = 'Bălan, Romania'
+)
+
+# Osservazione qualitativa: la variabilità potrebbe ridursi con l'urbanizzazione.
+
+# Salvataggio in PDF delle mappe di eterogeneità
+pdf("variability_balan.pdf")
+print(et_2017 + plot_annotation(
+  title = 'Land heterogeneity (2017)',
+  subtitle = 'Bălan, Romania'
+))
+print(et_2024 + plot_annotation(
+  title = 'Land heterogeneity (2024)',
+  subtitle = 'Bălan, Romania'
+))
+dev.off()
+
+
+
+# Classificazione delle immagini in 3 classi
+landcover_2017 <- unsuperClass(img_2017, nClasses = 3)
+landcover_2024 <- unsuperClass(img_2024, nClasses = 3)
+
+# Calcolo delle percentuali per ciascuna classe
+freq_2017 <- freq(landcover_2017$map)
+freq_2024 <- freq(landcover_2024$map)
+perc_2017 <- round((freq_2017 * 100) / ncell(landcover_2017$map), 2)
+perc_2024 <- round((freq_2024 * 100) / ncell(landcover_2024$map), 2)
+
+# Creazione di un DataFrame per confrontare le percentuali
+classi <- c("Terreno", "Bosco", "Città")
+percentuali <- data.frame(
+  Classe = classi,
+  Perc_2017 = perc_2017[,2],
+  Perc_2024 = perc_2024[,2]
+)
+
+# Visualizzazione
+print(percentuali)
+ggplot(percentuali, aes(x = Classe)) +
+  geom_bar(aes(y = Perc_2017, fill = "2017"), stat = "identity", position = "dodge") +
+  geom_bar(aes(y = Perc_2024, fill = "2024"), stat = "identity", position = "dodge") +
+  scale_fill_manual(values = c("2017" = "blue", "2024" = "green")) +
+  labs(title = "Confronto Land Cover 2017 vs 2024", y = "Percentuale", x = "Classe")
