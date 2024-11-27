@@ -9,7 +9,7 @@ library(raster)
 # Load a file found within the sdm package
 file <- system.file("external/species.shp", package="sdm")
 file
-species_data <- shapefile("C:/Users/briga/AppData/Local/R/win-library/4.2/sdm/external/species.shp")
+species_data <- shapefile("C:/Users/Martina/AppData/Local/R/win-library/4.2/sdm/external/species.shp")
 
 # Visualize informations about the dataset
 species_data
