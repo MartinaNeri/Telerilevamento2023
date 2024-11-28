@@ -112,14 +112,13 @@ DVI_2024 <- img_2024[[4]] - img_2024[[3]]
 DVI_fin <- DVI_2024 - DVI_2017 # Differenza nella densità di vegetazione tra 2024 e 2017
 
 # Visualizzazione del DVI
-viridis_palette <- colorRampPalette(viridis(7))(255)  # Colore per DVI
-color <- pal_viridis(option = "plasma")(7)
-
+# Imposto una palette di colori
+color <- magma(10)
 
 par(mfrow = c(1, 3))
-plot(DVI_2017, col = viridis_palette, main = "DVI 2017")
-plot(DVI_2024, col = viridis_palette, main = "DVI 2024")
-plot(DVI_fin, col = viridis_palette, main = "differenza DVI")
+plot(DVI_2017, col = color, main = "DVI 2017")
+plot(DVI_2024, col = color, main = "DVI 2024")
+plot(DVI_fin, col = color, main = "differenza DVI")
 dev.off()
 
 #DVI_2017: Ogni area con colori verso il viola rappresenta un valore di DVI più 
@@ -143,9 +142,9 @@ NDVI_dif <- NDVI_2024 - NDVI_2017
 
 # Visualizzazione del NDVI
 par(mfrow = c(1, 3))
-plot(NDVI_2017, col = viridis_palette, main = "NDVI 2017")
-plot(NDVI_2024, col = viridis_palette, main = "NDVI 2024")
-plot(NDVI_dif, col = viridis_palette, main = "Differenza tra NDVI 2024 e 2017")
+plot(NDVI_2017, col = color, main = "NDVI 2017")
+plot(NDVI_2024, col = color, main = "NDVI 2024")
+plot(NDVI_dif, col = color, main = "Differenza tra NDVI 2024 e 2017")
 dev.off()
 
 #stessa logica della lettura dei grafici del DVI
@@ -155,6 +154,22 @@ dev.off()
 # Parametri di input
 soglia <- -0.2
 #Soglia per la perdita di NDVI: Un valore di -0,2 identifica una perdita significativa.
+
+#La soglia di -0,2 è una scelta tipica per identificare la perdita significativa 
+#di copertura vegetale in base all'NDVI. Tuttavia, il valore può essere adattato al 
+#contesto geografico, temporale, o all'obiettivo dell'analisi. 
+#Se vuoi convalidare ulteriormente questa soglia, potresti confrontare i 
+#risultati con dati sul campo o altre metriche ambientali.
+
+#La scelta di -0,2 come soglia può variare a seconda del contesto ecologico e della scala temporale. 
+#Ecco alcune considerazioni:
+#Contesto geografico: In aree dove la vegetazione è densa, una soglia più severa
+#come -0,3 potrebbe essere più appropriata. In aree semiaride, una soglia meno 
+#severa come -0,1 potrebbe bastare.
+#Durata del periodo di analisi: Per un'analisi su un lungo periodo (come 7 anni 
+#nel tuo caso), una differenza di -0,2 è ragionevole per distinguere cambiamenti 
+#significativi.
+
 ndvi_iniziale <- NDVI_2017
 ndvi_finale <- NDVI_2024
 
@@ -193,6 +208,8 @@ print(perdita_2017_2024)
 #rispetto al totale dei pixel. In questo caso, il risultato è 2.082738%, 
 #quindi più del 2% dell'area totale monitorata ha subito una perdita 
 #significativa di vegetazione tra il 2017 e il 2018.
+
+
 
 #### 3. PCA (Analisi delle Componenti Principali) ####
 # Evidenzia variazioni strutturali nei dati, permettendo di ridurre la complessità del dataset.
@@ -264,78 +281,45 @@ print(t_test_result)
 ##### 5.  LAND COVER ANALYSIS 
 
 # Crea una palette colori per le classi
-cl_freq <- colorRampPalette(c("black", "grey", "white"))(3)
+cl_freq <- colorRampPalette(c("black", "white"))(2)
 
-# Per ogni anno, estrae i valori delle bande, classifica con k-means, calcola le frequenze e percentuali
+# Per ogni anno, estrae i valori di riflettanza, classifica con k-means, 
+#calcola le frequenze e percentuali
+
 # 2017
 single_nr_2017 <- getValues(img_2017)
-  
+k_cluster_2017 <- kmeans(single_nr_2017, centers = 2)
+img_17_class <- setValues(img_2017[[1]], k_cluster_2017$cluster)
+plot(img_17_class, col = cl_freq)
+dev.off()
+freq_2017 <- freq(img_17_class)
+perc_2017 <- round((freq_2017 * 100) / ncell(img_17_class), digits = 3)
+print(perc_2017)
+
+#2024
 single_nr_2024 <- getValues(img_2024)
-k_cluster_2024 <- kmeans(single_nr_2024, centers = 3)
+k_cluster_2024 <- kmeans(single_nr_2024, centers = 2)
 img_2024_class <- setValues(img_2024[[1]], k_cluster_2024$cluster)
 plot(img_2024_class, col = cl_freq)
+dev.off()
 freq_2024 <- freq(img_2024_class)
-perc_2024 <- round((freq_2024 * 100) / ncell(img_2024_class), digits = 5)
-
-# Consolidare i dati in un DataFrame
-copertura_vegetale <- c("Buona", "Ridotta", "Assente")
-Land_cover_perc <- data.frame(
-  copertura_vegetale, 
-  P_2017 = perc_2017[,2],
-  P_2024 = perc_2024[,2]
-)
-print(Land_cover_perc)
-
-
-### VISUALIZZAZIONE DEI RISULTATI
-
-perc_2017  # Visualizzazione delle percentuali di copertura per il 2017
-perc_2024  # Visualizzazione delle percentuali di copertura per il 2024
+perc_2024 <- round((freq_2024 * 100) / ncell(img_2024_class), digits = 3)
+print(perc_2024)
 
 ### CREAZIONE DI UN DATAFRAME CON I RISULTATI DELLA CLASSIFICAZIONE
 
-# Creazione dei vettori
-P_2017 <- perc_2017[,2]
-P_2024 <- perc_2024[,2]
+# Let's make a dataframe
+cover <- c("Forest","Bare Soil")
+percent_2017 <- perc_2017[,2]
+percent_2024 <- perc_2024[,2]
+percentages <- data.frame(cover, percent_2017, percent_2024)
+percentages
 
-# Creazione del dataframe
-Land_cover_perc <- data.frame(
-  copertura_vegetale, 
-  P_2017 = P_2017,
-  P_2024 = P_2024
-)
 
-# Visualizzazione del dataframe
-print(Land_cover_perc)
 
-### PLOTE DELLE PERCENTUALI DI LAND COVER + ESPORTAZIONE IN .pdf
 
-cl_barplot <- c("buona" = "blue", "ridotta" = "darkgreen", "assente" = "yellow")
 
-# Creazione di un PDF per le percentuali di copertura del 2017 e 2024
-pdf("Land_Cover_Percentages.pdf")
 
-# Plot per 2017
-ggplot(Land_cover_perc, aes(x = copertura_vegetale, y = P_2017, fill = copertura_vegetale)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = cl_barplot) +
-  labs(x = "Land Cover", y = "%", title = "Land Cover 2017") +
-  theme(legend.position = "none") +
-  ylim(0, 100) +
-  geom_text(aes(label = sprintf("%.2f%%", P_2017), y = P_2017),
-            position = position_stack(vjust = 0.5), size = 4)
-
-# Plot per 2024
-ggplot(Land_cover_perc, aes(x = copertura_vegetale, y = P_2024, fill = copertura_vegetale)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = cl_barplot) +
-  labs(x = "Land Cover", y = "%", title = "Land Cover 2024") +
-  theme(legend.position = "none") +
-  ylim(0, 100) +
-  geom_text(aes(label = sprintf("%.2f%%", P_2024), y = P_2024),
-            position = position_stack(vjust = 0.5), size = 4)
-
-dev.off()
 
 
 
