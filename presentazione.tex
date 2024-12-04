@@ -1,39 +1,44 @@
 \documentclass{beamer}
-\usepackage{graphicx} % Required for inserting images
-
-\title{Presentazione_esame_telerilevamento}
-\author{martina neri}
-\date{November 2024}
-
-\begin{document}
-
-
-\section{Introduction}
-
-\documentclass{beamer}
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{caption}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
 
 \setlength{\abovecaptionskip}{5pt}
 
 \usetheme{metropolis}
 
 % Personalizzazione dei colori
-\definecolor{verdescuro}{RGB}{34, 87, 45}
+\definecolor{verdepetrolio}{RGB}{50, 130, 102}
 \definecolor{bianco}{RGB}{255, 255, 255}
-\setbeamercolor{frametitle}{bg=verdescuro}
+\setbeamercolor{frametitle}{bg=verdepetrolio}
 \setbeamercolor{alerted text}{fg=bianco}
 
 % Imposta il font predefinito su Helvetica
 \renewcommand{\familydefault}{\sfdefault}
 
-\title{\textbf{Analisi della Deforestazione in Romania}}
-\subtitle{Studio mediante Telerilevamento 2017-2024}
-\author{Analisi Satellitare}
+% Stile per il codice
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{verdepetrolio}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{orange},
+    frame=single,
+    breaklines=true,
+    columns=fullflexible,
+    language=R
+}
+
+\title{\textbf{Analisi di Telerilevamento con R}}
+\subtitle{Analisi temporale dei Carpazi rumeni tra il 2015 e il 2024}
+\author{Martina Neri}
 %\date{}
 
 \begin{document}
+
 \maketitle
 
 \begin{frame}
@@ -41,121 +46,127 @@
 \tableofcontents
 \end{frame}
 
-% Sezione 1: introduzione
 \section{Introduzione}
 
 \begin{frame}{\textbf{Scopo dello studio}}
-Monitoraggio della deforestazione nell'area di Bălan, Romania, attraverso l'analisi di immagini satellitari \textbf{Sentinel-2} nel periodo 2017-2024
-\end{frame}
-
-\begin{frame}{\textbf{Obiettivi}}
+Confrontare immagini satellitari tra il 2015 e il 2024 per:
 \begin{itemize}
-    \item Acquisizione e analisi di immagini \textbf{Sentinel-2} (2017-2024)
-    \item \pause Calcolo di \textbf{indici spettrali} tramite R
-    \item \pause Analisi delle variazioni della copertura forestale
-    \item \pause Quantificazione della perdita di vegetazione
+    \item Analizzare variazioni di vegetazione tramite l'indice \textbf{NDVI}.
+    \item Identificare cambiamenti significativi nella copertura vegetale.
+    \item Eseguire una \textbf{Principal Component Analysis} (PCA) per evidenziare aree vulnerabili.
 \end{itemize}
 \end{frame}
 
-% Sezione 2: materiali e metodi
 \section{Materiali e Metodi}
 
-\begin{frame}{\textbf{Materiali e Metodi}}
+\begin{frame}{\textbf{Dati e Software}}
 \begin{itemize}
-    \item Download e preprocessing delle immagini \textbf{Sentinel-2}
-    \item \pause Calcolo degli \textbf{indici spettrali}:
+    \item \textbf{Dati}: Immagini Landsat 8 degli anni 2015 e 2024.
+    \item \textbf{Software}: Analisi effettuata con il linguaggio R e pacchetti come:
     \begin{itemize}
-        \item DVI (Difference Vegetation Index)
-        \item NDVI (Normalized Difference Vegetation Index)
-        \item EVI (Enhanced Vegetation Index)
+        \item \texttt{raster}
+        \item \texttt{ggplot2}
+        \item \texttt{RStoolbox}
     \end{itemize}
-    \item \pause Analisi \textbf{PCA} (Principal Component Analysis)
-    \item \pause Analisi statistica (\textbf{T-test})
-    \item \pause Classificazione della \textbf{Land Cover}
 \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\textbf{Script di importazione ed elaborazione dei dati}}
+\begin{lstlisting}
+# Caricamento delle immagini satellitari
+rlist_2015 <- list.files(pattern = "Landsat8_2015")
+import_2015 <- lapply(rlist_2015, raster)
+img_2015 <- stack(import_2015)
+
+rlist_2024 <- list.files(pattern = "Landsat8_2024_LowCloud")
+import_2024 <- lapply(rlist_2024, raster)
+img_2024 <- stack(import_2024)
+
+# Visualizzazione delle immagini
+par(mfrow = c(1, 2))
+plotRGB(img_2015, 3, 2, 1, stretch = "lin")
+plotRGB(img_2024, 3, 2, 1, stretch = "lin")
+\end{lstlisting}
 \end{frame}
 
 \section{Risultati}
 
-\subsection{Analisi degli Indici Spettrali}
+\subsection{Calcolo e confronto degli indici spettrali}
 
-\begin{frame}{\textbf{NDVI: Normalized Difference Vegetation Index}}
+\begin{frame}{\textbf{NDVI: Calcolo e Confronto}}
+\textbf{Formula NDVI}:
+\[
+NDVI = \frac{\text{NIR} - \text{Rosso}}{\text{NIR} + \text{Rosso}}
+\]
 \begin{itemize}
-    \item Formula: $NDVI = \frac{NIR - Red}{NIR + Red}$
-    \item \pause Varia da -1 a +1
-    \item \pause Valori più alti indicano vegetazione più sana
-    \item \pause Perdita significativa rilevata:
-    \begin{itemize}
-        \item Numero di pixel con perdita: \textbf{87,475}
-        \item Percentuale area interessata: \textbf{2.08\%}
-    \end{itemize}
+    \item Calcolo del \textbf{NDVI} per entrambi gli anni.
+    \item Differenza tra il NDVI 2024 e il NDVI 2015 per evidenziare variazioni significative.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{\textbf{Enhanced Vegetation Index (EVI)}}
-\begin{equation}
-EVI = G \times \frac{NIR - Red}{NIR + C1 \times Red - C2 \times Blue + L}
-\end{equation}
-Dove:
+\begin{frame}[fragile]{\textbf{Calcolo in R}}
+\begin{lstlisting}
+# Calcolo del NDVI
+NDVI_2015 <- (img_2015[[4]] - img_2015[[3]]) / (img_2015[[4]] + img_2015[[3]])
+NDVI_2024 <- (img_2024[[4]] - img_2024[[3]]) / (img_2024[[4]] + img_2024[[3]])
+NDVI_dif <- NDVI_2024 - NDVI_2015
+
+# Visualizzazione
+par(mfrow = c(1, 3))
+plot(NDVI_2015, main = "NDVI 2015")
+plot(NDVI_2024, main = "NDVI 2024")
+plot(NDVI_dif, main = "Differenza NDVI")
+\end{lstlisting}
+\end{frame}
+
+\subsection{Test statistici e PCA}
+
+\begin{frame}[fragile]{\textbf{Test statistico sul NDVI}}
+\begin{lstlisting}
+# Test t accoppiato tra NDVI 2015 e NDVI 2024
+ndvi_values_2015 <- getValues(NDVI_2015)
+ndvi_values_2024 <- getValues(NDVI_2024)
+t_test_result <- t.test(ndvi_values_2015, ndvi_values_2024, paired = TRUE)
+print(t_test_result)
+\end{lstlisting}
+\textbf{Risultati:}
 \begin{itemize}
-    \item G = 2.5 (fattore di guadagno)
-    \item C1 = 6
-    \item C2 = 7.5
-    \item L = 1 (fattore di correzione del suolo)
+    \item \textbf{t = -107.12}, \textbf{p-value < 2.2e-16}.
+    \item Differenza significativa tra NDVI 2015 e 2024.
 \end{itemize}
 \end{frame}
 
-\subsection{Analisi PCA}
+\begin{frame}[fragile]{\textbf{PCA sulle immagini NDVI}}
+\begin{lstlisting}
+# PCA su NDVI
+stack_ndvi <- stack(NDVI_2015, NDVI_2024)
+PCA_ndvi <- prcomp(sampleRandom(stack_ndvi, 10000, as.data.frame = TRUE))
+PCI_raster <- predict(stack_ndvi, PCA_ndvi, index = 1)
 
-\begin{frame}{\textbf{Principal Component Analysis}}
-\begin{itemize}
-    \item Riduzione della dimensionalità dei dati
-    \item \pause Identificazione delle aree con maggior variazione
-    \item \pause Risultati:
-    \begin{itemize}
-        \item PC1: evidenzia le zone di maggior cambiamento
-        \item \pause Campionamento casuale di 10,000 punti
-        \item \pause Validazione statistica tramite T-test
-    \end{itemize}
-\end{itemize}
-\end{frame}
-
-\subsection{Land Cover Analysis}
-
-\begin{frame}{\textbf{Analisi della Copertura del Suolo}}
-Classificazione binaria:
-\begin{itemize}
-    \item Copertura vegetale \textbf{buona}
-    \item Copertura vegetale \textbf{ridotta/assente}
-\end{itemize}
-\pause
-Metodologia:
-\begin{itemize}
-    \item Clustering K-means (k=2)
-    \item \pause Calcolo delle frequenze e percentuali
-    \item \pause Confronto temporale 2017-2024
-\end{itemize}
+# Visualizzazione della prima componente principale
+plot(PCI_raster, main = "Prima Componente Principale (PC1)")
+\end{lstlisting}
 \end{frame}
 
 \section{Conclusioni}
 
 \begin{frame}{\textbf{Conclusioni}}
 \begin{itemize}
-    \item Perdita significativa di copertura forestale (\textbf{2.08\%} dell'area)
-    \item \pause L'analisi PCA ha evidenziato i pattern di deforestazione
-    \item \pause Il T-test conferma la significatività statistica dei cambiamenti
-    \item \pause Necessità di monitoraggio continuo e misure di conservazione
+    \item Differenze significative nel \textbf{NDVI} suggeriscono una riduzione della vegetazione.
+    \item La \textbf{PCA} evidenzia zone con maggiori variazioni ambientali.
+    \item L'analisi con R si è rivelata un valido strumento per il monitoraggio dei cambiamenti ambientali.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{\textbf{Prospettive Future}}
+\section{Analisi future}
+
+\begin{frame}{\textbf{Analisi future}}
 \begin{itemize}
-    \item Estensione dell'analisi ad altre aree della Romania
-    \item \pause Integrazione con dati socio-economici
-    \item \pause Sviluppo di un sistema di early warning
-    \item \pause Supporto alle politiche di conservazione forestale
+    \item Sarebbe interessante fare un analisi della differenza dello stato di salute delle foreste nei carpazi al confine tra Romania e Ucraina??????????????????
+  
 \end{itemize}
 \end{frame}
+
 
 \begin{frame}{}
 \centering
@@ -163,7 +174,3 @@ Metodologia:
 \end{frame}
 
 \end{document}
-
-\end{document}
-
-
