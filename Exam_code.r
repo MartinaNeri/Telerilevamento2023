@@ -1,5 +1,4 @@
-
-####### Analisi Incendi Australia 2019-2020-2025
+####### Analisi Incendi Australia 2019-2020
 
 ####### 1. Installazione e caricamento dei pacchetti necessari ####### 
 install.packages("raster")
@@ -73,32 +72,34 @@ img_2025
 plot(img_2025)
 dev.off()
 
-# Salvo in PDF le immagini RGB per il 2019, 2020 e 2025
-# pdf("img_2019.pdf")
-par(mfrow = c(1, 3))
+# Salvo in PNG le immagini RGB per il 2019, 2020 e 2025
+png("img_2019.png", width = 800, height = 600)
+par(mfrow = c(1, 2))
 plotRGB(img_2019, 3, 2, 1, stretch = "lin")
 plotRGB(img_2019, 4, 3, 2, stretch = "lin")
 dev.off()
 
-# pdf("img_2020.pdf")
-par(mfrow = c(1, 3)) 
+png("img_2020.png", width = 800, height = 600)
+par(mfrow = c(1, 2)) 
 plotRGB(img_2020, 3, 2, 1, stretch = "lin")
 plotRGB(img_2020, 4, 3, 2, stretch = "lin")
 dev.off()
 
-# pdf("img_2025.pdf")
-par(mfrow = c(1, 3)) 
+png("img_2025.png", width = 800, height = 600)
+par(mfrow = c(1, 2)) 
 plotRGB(img_2025, 3, 2, 1, stretch = "lin")
 plotRGB(img_2025, 4, 3, 2, stretch = "lin")
 dev.off()
 
 # Plotto le immagini per tipo di immagini
+png("RGB_comparison.png", width = 1200, height = 600)
 par(mfrow = c(1, 3))
 plotRGB(img_2019, 3, 2, 1, stretch = "lin")
 plotRGB(img_2020, 3, 2, 1, stretch = "lin")
 plotRGB(img_2025, 3, 2, 1, stretch = "lin")
 dev.off()
 
+png("RGB_comparison_2.png", width = 1200, height = 600)
 par(mfrow = c(1, 3))
 plotRGB(img_2019, 4, 3, 2, stretch = "lin")
 plotRGB(img_2020, 4, 3, 2, stretch = "lin")
@@ -121,18 +122,18 @@ DVI_diff_2025 <- DVI_2025 - DVI_2020 # Differenza nella densità di vegetazione 
 # Imposto una palette di colori
 color <- cividis(10)
 
-# Salvo in PDF i grafici
-# pdf("DVI.pdf")
+# Salvo in PNG i grafici
+png("DVI.png", width = 1200, height = 600)
 par(mfrow = c(1, 3))
 plot(DVI_2019, col = color, main = "DVI 2019")
 plot(DVI_2020, col = color, main = "DVI 2020")
 plot(DVI_2025, col = color, main = "DVI 2025")
 dev.off()
 
-# pdf("DVI_diff.pdf")
+png("DVI_diff.png", width = 800, height = 600)
 par(mfrow = c(1, 2))
 plot(DVI_diff_2020, col = color, main = "Differenza DVI 2020-2019")
-plot(DVI_diff_2025, col = color, main = "Differenza DVI 2025-2019")
+plot(DVI_diff_2025, col = color, main = "Differenza DVI 2025-2020")
 dev.off()
 
 #Valori positivi: colori più vicini al giallo indicano un aumento della densità di vegetazione.
@@ -149,18 +150,32 @@ NDVI_diff_2020 <- NDVI_2020 - NDVI_2019
 NDVI_diff_2025 <- NDVI_2025 - NDVI_2020
 
 # Visualizzazione dell'NDVI
+png("NDVI.png", width = 1200, height = 600)
 par(mfrow = c(1, 3))
 plot(NDVI_2019, col = color, main = "NDVI 2019")
 plot(NDVI_2020, col = color, main = "NDVI 2020")
 plot(NDVI_2025, col = color, main = "NDVI 2025")
 dev.off()
 
-# pdf("NDVI_diff.pdf")
+png("NDVI_diff.png", width = 800, height = 600)
 par(mfrow = c(1, 2))
 plot(NDVI_diff_2020, col = color, main = "Differenza NDVI 2020-2019")
-plot(NDVI_diff_2025, col = color, main = "Differenza NDVI 2025-2019")
+plot(NDVI_diff_2025, col = color, main = "Differenza NDVI 2025-2020")
 dev.off()
 # stessa lettura del DVI
+
+####### 4. Differenza di NDVI e Paired t-Test ####### 
+
+#utilizzo il paired t.test per valutare se le differenze nei valori NDVI sono statisticamente significative.
+
+# Paired t-Test
+ndvi_2019_vals <- getValues(NDVI_2019)
+ndvi_2020_vals <- getValues(NDVI_2020)
+ndvi_2025_vals <- getValues(NDVI_2025)
+paired_t_test_2020 <- t.test(ndvi_2019_vals, ndvi_2020_vals, paired = TRUE)
+paired_t_test_2025 <- t.test(ndvi_2019_vals, ndvi_2025_vals, paired = TRUE)
+paired_t_test_2020
+paired_t_test_2025
 
 ####### 5. PCA (Principal Component Analysis) #######
 
@@ -198,7 +213,9 @@ summary(PCA)
 PCA_projection <- predict(NDVI_stack, PCA, index = 1:2)
 
 # Plot della prima componente principale (PC1)
+png("PCA_PC1.png", width = 800, height = 600)
 plot(PCA_projection[[1]], main = "Prima Componente Principale (PC1)", col = viridis(100))
+dev.off()
 
 ####### 6. Classificazione Land Cover ####### 
 
@@ -223,7 +240,9 @@ perc_2019 <- round((freq_2019[, 2] * 100) / tot_pixel_2019, digit = 5)
 
 # Plot dell'immagine classificata 2019
 cl_freq <- colorRampPalette(c("blue", "yellow"))(2)
+png("Land_Cover_2019.png", width = 800, height = 600)
 plot(img_2019_class, col = cl_freq, main = "Classificazione Land Cover 2019")
+dev.off()
 
 ### CLASSIFICAZIONE IMMAGINI 2020
 set.seed(1)
@@ -241,7 +260,9 @@ tot_pixel_2020 <- ncell(img_2020_class)
 perc_2020 <- round((freq_2020[, 2] * 100) / tot_pixel_2020, digit = 5)
 
 # Plot dell'immagine classificata 2020
+png("Land_Cover_2020.png", width = 800, height = 600)
 plot(img_2020_class, col = cl_freq, main = "Classificazione Land Cover 2020")
+dev.off()
 
 ### CLASSIFICAZIONE IMMAGINI 2025
 set.seed(1)
@@ -259,7 +280,9 @@ tot_pixel_2025 <- ncell(img_2025_class)
 perc_2025 <- round((freq_2025[, 2] * 100) / tot_pixel_2025, digit = 5)
 
 # Plot dell'immagine classificata 2025
+png("Land_Cover_2025.png", width = 800, height = 600)
 plot(img_2025_class, col = cl_freq, main = "Classificazione Land Cover 2025")
+dev.off()
 
 # Creazione DataFrame
 # Creazione dei vettori
@@ -287,7 +310,7 @@ print(Land_cover_perc)
 cl_barplot <- c("buona" = "blue", "ridotta/assente" = "yellow")
 
 # Percentuali Land Cover 2019
-pdf("Percentuali_Land_Cover_2019.pdf")
+png("Percentuali_Land_Cover_2019.png", width = 800, height = 600)
 plot_2019 <- ggplot(Land_cover_perc, aes(x = copertura_vegetale, y = P_2019, fill = copertura_vegetale)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = cl_barplot) +
@@ -300,7 +323,7 @@ print(plot_2019)
 dev.off()
 
 # Percentuali Land Cover 2020
-pdf("Percentuali_Land_Cover_2020.pdf")
+png("Percentuali_Land_Cover_2020.png", width = 800, height = 600)
 plot_2020 <- ggplot(Land_cover_perc, aes(x = copertura_vegetale, y = P_2020, fill = copertura_vegetale)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = cl_barplot) +
@@ -313,7 +336,7 @@ print(plot_2020)
 dev.off()
 
 # Percentuali Land Cover 2025
-pdf("Percentuali_Land_Cover_2025.pdf")
+png("Percentuali_Land_Cover_2025.png", width = 800, height = 600)
 plot_2025 <- ggplot(Land_cover_perc, aes(x = copertura_vegetale, y = P_2025, fill = copertura_vegetale)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = cl_barplot) +
@@ -325,26 +348,3 @@ plot_2025 <- ggplot(Land_cover_perc, aes(x = copertura_vegetale, y = P_2025, fil
 print(plot_2025)
 dev.off()
 
-# Combinazione dei grafici
-final_plot <- plot_2019 + plot_2020 + plot_2025
-
-# Salvataggio del grafico combinato
-pdf("Final_Land_Cover_2019_2020_2025.pdf")
-print(final_plot)
-dev.off()
-
-#######  7. Esportazione dei risultati####### 
-
-# Salva i risultati in PDF
-pdf("Australia_Forest_Fire_Analysis.pdf")
-par(mfrow = c(3, 3))
-plot(NDVI_2019, main = "NDVI 2019", col = viridis(100))
-plot(NDVI_2020, main = "NDVI 2020", col = viridis(100))
-plot(NDVI_2025, main = "NDVI 2025", col = viridis(100))
-plot(NDVI_diff_2020, main = "Differenza NDVI 2020-2019", col = viridis(100))
-plot(NDVI_diff_2025, main = "Differenza NDVI 2025-2019", col = viridis(100))
-plot(PCA_projection[[1]], main = "PC1", col = viridis(100))
-plot(img_2019_class, main = "Land Cover 2019", col = c("blue", "yellow"))
-plot(img_2020_class, main = "Land Cover 2020", col = c("blue", "yellow"))
-plot(img_2025_class, main = "Land Cover 2025", col = c("blue", "yellow"))
-dev.off()
