@@ -32,8 +32,8 @@
     language=R
 }
 
-\title{\textbf{\textcolor{verdeScuro}{Analisi Incendi Australia 2019-2025}}}
-\subtitle{Monitoraggio della foresta australiana colpita dagli incendi tra il 2019 e il 2025}
+\title{\textbf{\textcolor{verdeScuro}{Analisi Incendi Australia 2019-2024}}}
+\subtitle{Monitoraggio della foresta australiana colpita dagli incendi tra il 2019 e il 2024}
 \author{Martina Neri}
 %\date{}
 
@@ -49,7 +49,7 @@
 \section{Introduzione}
 
 \begin{frame}{\textbf{Introduzione}}
-\textbf{Titolo:} Analisi Incendi in Australia (2019-2020-2025)
+\textbf{Titolo:} Analisi Incendi in Australia (2019-2020-2024)
 \newline
 \newline
 \textbf{Obiettivo:} Esaminare gli effetti degli incendi forestali del 2019 in Australia sull'ambiente tramite immagini satellitari.
@@ -61,7 +61,7 @@
 \section{Dati e Software Utilizzati}
 
 \begin{frame}{\textbf{Dati e Software Utilizzati}}
-\textbf{Dataset:} Immagini satellitari di tre date chiave (2019, 2020, 2025).
+\textbf{Dataset:} Immagini satellitari di tre date chiave (2019, 2020, 2024).
 \newline
 \newline
 \textbf{Software:} R con i pacchetti \texttt{raster}, \texttt{ggplot2}, \texttt{viridis}.
@@ -90,20 +90,18 @@ setwd("C:/lab/Esame_telerilevamento/prova")
 
 \textbf{Importazione delle immagini:}
 \begin{lstlisting}
-rlist_2019 <- list.files(pattern = "2019-01-26")
+rlist_2019 <- list.files(pattern = "2019-02-22")
 import_2019 <- lapply(rlist_2019, raster)
 img_2019 <- stack(import_2019)
-#stesso procedimento per 2020 e 2025
 \end{lstlisting}
 
 \textbf{Visualizzazione delle immagini:}
 \begin{lstlisting}
 par(mfrow = c(1, 2))
 plotRGB(img_2019, 3, 2, 1, stretch = "lin") #True color
-plotRGB(img_2020, 4, 3, 2, stretch = "lin") #NIR
-dev.off()
-#stesso procedimento per 2020 e 2025
+plotRGB(img_2019, 4, 3, 2, stretch = "lin") #NIR
 \end{lstlisting}
+Simile per 2020 e 2024.
 \end{frame}
 
 \section{Analisi degli Indici Spettrali}
@@ -113,38 +111,26 @@ dev.off()
 \begin{lstlisting}
 # Formula
 DVI_2019 <- img_2019[[4]] - img_2019[[3]]
-#stesso procedimento per 2020 e 2025
+DVI_2020 <- img_2020[[4]] - img_2020[[3]]
+DVI_2024 <- img_2024[[4]] - img_2024[[3]]
 
 # Differenze tra anni
 DVI_diff_2020 <- DVI_2020 - DVI_2019 #danni dati dall'incendio
-DVI_diff_2025 <- DVI_2025 - DVI_2020 #ripristino vegetazione
+DVI_diff_2024 <- DVI_2024 - DVI_2020 #ripristino vegetazione
 
 # Visualizzazione
 par(mfrow = c(1, 3))
 plot(DVI_2019, col = viridis(10), main = "DVI 2019")
 plot(DVI_2020, col = viridis(10), main = "DVI 2020")
-plot(DVI_2025, col = viridis(10), main = "DVI 2025")
-dev.off()
-
+plot(DVI_2024, col = viridis(10), main = "DVI 2024")
 \end{lstlisting}
 \end{frame}
 
 \begin{frame}{\textbf{Immagini DVI}}
 \begin{columns}
-    \column{0.33\textwidth}
+    \column{1\textwidth}
     \centering
-    \textbf{DVI 2019}
-    \includegraphics[width=\textwidth]{dvi_2019.png}
-    
-    \column{0.33\textwidth}
-    \centering
-    \textbf{DVI 2020}
-    \includegraphics[width=\textwidth]{dvi_2020.png}
-    
-    \column{0.33\textwidth}
-    \centering
-    \textbf{DVI 2025}
-    \includegraphics[width=\textwidth]{dvi_2025.png}
+    \includegraphics[width=\textwidth]{DVI.png}
 \end{columns}
 \end{frame}
 
@@ -152,67 +138,46 @@ dev.off()
 \textbf{NDVI (Normalized Difference Vegetation Index):}
 \begin{lstlisting}
 # Formula
-NDVI_2019 <- DVI_2019/ (img_2019[[4]] + img_2019[[3]])
-#stesso procedimento per 2020 e 2025
+NDVI_2019 <- DVI_2019 / (img_2019[[4]] + img_2019[[3]])
+NDVI_2020 <- DVI_2020 / (img_2020[[4]] + img_2020[[3]])
+NDVI_2024 <- DVI_2024 / (img_2024[[4]] + img_2024[[3]])
 
 # Cambiamenti temporali
 NDVI_diff_2020 <- NDVI_2020 - NDVI_2019 #danni dati dall'incendio
-NDVI_diff_2025 <- NDVI_2025 - NDVI_2020 #ripristino vegetazione
+NDVI_diff_2024 <- NDVI_2024 - NDVI_2020 #ripristino vegetazione
 
 # Visualizzazione
 par(mfrow = c(1, 3))
 plot(NDVI_2019, col = viridis(10), main = "NDVI 2019")
 plot(NDVI_2020, col = viridis(10), main = "NDVI 2020")
-plot(NDVI_2025, col = viridis(10), main = "NDVI 2025")
-dev.off()
+plot(NDVI_2024, col = viridis(10), main = "NDVI 2024")
 \end{lstlisting}
 \end{frame}
 
 \begin{frame}{\textbf{Immagini NDVI}}
 \begin{columns}
-    \column{0.33\textwidth}
+    \column{1\textwidth}
     \centering
-    \textbf{NDVI 2019}
-    \includegraphics[width=\textwidth]{ndvi_2019.png}
-    
-    \column{0.33\textwidth}
-    \centering
-    \textbf{NDVI 2020}
-    \includegraphics[width=\textwidth]{ndvi_2020.png}
-    
-    \column{0.33\textwidth}
-    \centering
-    \textbf{NDVI 2025}
-    \includegraphics[width=\textwidth]{ndvi_2025.png}
+    \includegraphics[width=\textwidth]{NDVI.png}
 \end{columns}
 \end{frame}
 
-
-\begin{frame}[fragile]{\textbf{Indice NDVI}}
-\textbf{NDVI (Normalized Difference Vegetation Index):}
+\begin{frame}[fragile]{\textbf{Differenze NDVI}}
 \begin{lstlisting}
 # Visualizzazione delle differenze
 par(mfrow = c(1, 2))
 plot(NDVI_diff_2020, col = viridis(10), main = "Differenza NDVI 2020-2019")
-plot(NDVI_diff_2025, col = viridis(10), main = "Differenza NDVI 2025-2020")
-dev.off()
+plot(NDVI_diff_2024, col = viridis(10), main = "Differenza NDVI 2024-2020")
 \end{lstlisting}
 \end{frame}
 
 \begin{frame}{\textbf{Differenze NDVI}}
 \begin{columns}
-    \column{0.5\textwidth}
+    \column{1\textwidth}
     \centering
-    \textbf{NDVI 2019-2020}
-    \includegraphics[width=\textwidth]{NDVI 2019-2020.png}
-    
-    \column{0.5\textwidth}
-    \centering
-    \textbf{NDVI 2020-2025}
-    \includegraphics[width=\textwidth]{NDVI 2020-2025.png}
+    \includegraphics[width=\textwidth]{NDVI_diff.png}
 \end{columns}
 \end{frame}
-
 
 \section{PCA (Analisi delle Componenti Principali)}
 
@@ -223,37 +188,78 @@ dev.off()
 \textbf{Procedura:}
 \begin{lstlisting}
 # Campionamento casuale
-NDVI_stack <- stack(NDVI_2019, NDVI_2020, NDVI_2025)
-sample_pixels <- sampleRandom(NDVI_stack, size = 10000)
+NDVI_stack_2019_2020 <- stack(NDVI_2019, NDVI_2020)
+sample_pixels_2019_2020 <- sampleRandom(NDVI_stack_2019_2020, size = 10000)
 
 # Esecuzione PCA
-PCA_ndvi <- prcomp(sample_pixels, scale. = TRUE)
+PCA_2019_2020 <- prcomp(sample_pixels_2019_2020, scale. = TRUE)
+summary(PCA_2019_2020)
 
 # Proiezione
-PCI_raster <- predict(NDVI_stack, PCA_ndvi, index = 1)
-plot(PCI_raster, main = "Prima Componente Principale (PC1)", col = viridis(100))
+PCA_projection_2019_2020 <- predict(NDVI_stack_2019_2020, PCA_2019_2020, index = 1)
+plot(PCA_projection_2019_2020[[1]], main = "PC1 2019-2020", col = viridis(100))
 \end{lstlisting}
 \end{frame}
 
-\begin{frame}{\textbf{Immagini PCA}}
+\begin{frame}{\textbf{PCA 2019-2020}}
 \begin{columns}
     \column{0.5\textwidth}
     \centering
-    \textbf{PCA Componente 1}
-    \includegraphics[width=\textwidth]{pca_1.png}
+    \includegraphics[width=\textwidth]{PCA_PC1_2019_2020.png}
     
     \column{0.5\textwidth}
     \centering
     \textbf{Summary della PCA}
     \begin{table}
         \centering
-        \begin{tabular}{lccc}
+        \begin{tabular}{lcc}
             \toprule
             & PC1 \\
             \midrule
-            Standard deviation     & 1.4712\\
-            Proportion of Variance & 0.7215\\
-            Cumulative Proportion  & 0.7215\\
+            Standard deviation     & 1.1176 \\
+            Proportion of Variance & 0.6246 \\
+            Cumulative Proportion  & 0.6246 \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{\textbf{PCA (Analisi delle Componenti Principali)}}
+\begin{lstlisting}
+# PCA su 2020-2024
+NDVI_stack_2020_2024 <- stack(NDVI_2020, NDVI_2024)
+sample_pixels_2020_2024 <- sampleRandom(NDVI_stack_2020_2024, size = 10000)
+
+# Esecuzione PCA
+PCA_2020_2024 <- prcomp(sample_pixels_2020_2024, scale. = TRUE)
+summary(PCA_2020_2024)
+
+# Proiezione
+PCA_projection_2020_2024 <- predict(NDVI_stack_2020_2024, PCA_2020_2024, index = 1)
+png("PCA_PC1_2020_2024.png", width = 800, height = 600)
+plot(PCA_projection_2020_2024[[1]], main = "PC1 2020-2024", col = viridis(100))
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{\textbf{PCA 2020-2024}}
+\begin{columns}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{PCA_PC1_2020_2024.png}
+    
+    \column{0.5\textwidth}
+    \centering
+    \textbf{Summary della PCA}
+    \begin{table}
+        \centering
+        \begin{tabular}{lcc}
+            \toprule
+            & PC1 \\
+            \midrule
+            Standard deviation     & 1.1826 \\
+            Proportion of Variance & 0.6993 \\
+            Cumulative Proportion  & 0.6993 \\
             \bottomrule
         \end{tabular}
     \end{table}
@@ -277,25 +283,22 @@ img_2019_class <- setValues(img_2019[[1]], k_cluster_2019$cluster)
 # Visualizzazione
 plot(img_2019_class, col = c("blue", "yellow"), main = "Classificazione 2019")
 \end{lstlisting}
-Simile per 2020 e 2025.
+Simile per 2020 e 2024.
 \end{frame}
 
 \begin{frame}{\textbf{Immagini Classificazione Land Cover}}
 \begin{columns}
     \column{0.33\textwidth}
     \centering
-    \textbf{Classificazione 2019}
-    \includegraphics[width=\textwidth]{class_2019.png}
+    \includegraphics[width=\textwidth]{Land_Cover_2019.png}
     
     \column{0.33\textwidth}
     \centering
-    \textbf{Classificazione 2020}
-    \includegraphics[width=\textwidth]{class_2020.png}
+    \includegraphics[width=\textwidth]{Land_Cover_2020.png}
     
     \column{0.33\textwidth}
     \centering
-    \textbf{Classificazione 2025}
-    \includegraphics[width=\textwidth]{class_2025.png}
+    \includegraphics[width=\textwidth]{Land_Cover_2024.png}
 \end{columns}
 \end{frame}
 
@@ -305,28 +308,23 @@ Simile per 2020 e 2025.
 \textbf{Percentuali di copertura vegetale:}
 \begin{lstlisting}
 copertura_vegetale <- c("ridotta/assente", "buona")
-# Supponendo che P_2019, P_2020, P_2025 siano definiti
-Land_cover_perc <- data.frame(copertura_vegetale, P_2019, P_2020, P_2025)
+# Supponendo che P_2019, P_2020, P_2024 siano definiti
+Land_cover_perc <- data.frame(copertura_vegetale, P_2019, P_2020, P_2024)
 \end{lstlisting}
 
 \begin{columns}
     \column{0.33\textwidth}
     \centering
-    \textbf{Copertura 2019}
-    \includegraphics[width=\textwidth]{Cop_2019.png}
+    \includegraphics[width=\textwidth]{Percentuali_Land_Cover_2019.png}
     
     \column{0.33\textwidth}
     \centering
-    \textbf{Copertura 2020}
-    \includegraphics[width=\textwidth]{Cop_2020.png}
+    \includegraphics[width=\textwidth]{Percentuali_Land_Cover_2020.png}
     
     \column{0.33\textwidth}
     \centering
-    \textbf{copertura 2025}
-    \includegraphics[width=\textwidth]{Cop_2025.png}
+    \includegraphics[width=\textwidth]{Percentuali_Land_Cover_2024.png}
 \end{columns}
-\end{frame}
-\end{lstlisting}
 \end{frame}
 
 \section{Conclusioni}
@@ -334,7 +332,7 @@ Land_cover_perc <- data.frame(copertura_vegetale, P_2019, P_2020, P_2025)
 \begin{frame}{\textbf{Conclusioni}}
 \begin{itemize}
     \item Gli incendi del 2019 hanno ridotto significativamente la copertura vegetale.
-    \item Lieve recupero osservato nel 2025, ma lontano dai livelli del 2019.
+    \item La copertura vegetale ha continuato a diminuire nel 2024, ma il tasso di diminuzione è stato più basso.
 \end{itemize}
 \end{frame}
 
