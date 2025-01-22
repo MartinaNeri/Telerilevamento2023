@@ -1,9 +1,17 @@
-####### Analisi Incendi Australia 2019-2020
+####### Analisi Incendi Australia (New South Wales) 2019-2020-2025
+
+#{"type":"Polygon","coordinates":[[
+#[150.344055,-32.826519],
+#[151.218018,-32.826519],
+#[151.218018,-33.548257],
+#[150.344055,-33.548257],
+#[150.344055,-32.826519]]]}
+#L'area ha un'estensione di 6541.51 km2
 
 ####### 1. Installazione e caricamento dei pacchetti necessari ####### 
-install.packages("raster")
-install.packages("ggplot2")
-install.packages("viridis")
+install.packages("raster") # per la manipolazione di dati raster
+install.packages("ggplot2") # per la creazione di grafici
+install.packages("viridis") # per la selezione di palette di colori 
 
 library(raster)
 library(ggplot2)
@@ -16,7 +24,7 @@ setwd("C:/lab/Esame_telerilevamento/prova")
 
 # 2019
 # Carico le immagini con rlist selezionando tutti i file che contengono "2019-01-16" nel nome
-rlist_2019 <- list.files(pattern = "2019-01-26")
+rlist_2019 <- list.files(pattern = "2018-12-26")
 rlist_2019
 
 # Applico la funzione raster() all'intera lista
@@ -36,7 +44,7 @@ dev.off()
 
 # 2020
 # Carico le immagini con rlist selezionando tutti i file che contengono "2020-01-21" nel nome
-rlist_2020 <- list.files(pattern = "2020-01-21")
+rlist_2020 <- list.files(pattern = "2019-12-31")
 rlist_2020
 
 # Applico la funzione raster() all'intera lista
@@ -55,7 +63,7 @@ dev.off()
 
 # 2025
 # Carico le immagini con rlist selezionando tutti i file che contengono "2025-01-15" nel nome
-rlist_2025 <- list.files(pattern = "2025-01-14")
+rlist_2025 <- list.files(pattern = "2024-12-29")
 rlist_2025
 
 # Applico la funzione raster() all'intera lista
@@ -115,6 +123,7 @@ dev.off()
 DVI_2019 <- img_2019[[4]] - img_2019[[3]]  # DVI = NIR - Rosso
 DVI_2020 <- img_2020[[4]] - img_2020[[3]]
 DVI_2025 <- img_2025[[4]] - img_2025[[3]]
+
 DVI_diff_2020 <- DVI_2020 - DVI_2019 # Differenza nella densità di vegetazione tra 2020 e 2019
 DVI_diff_2025 <- DVI_2025 - DVI_2020 # Differenza nella densità di vegetazione tra 2025 e 2019
 
@@ -146,6 +155,7 @@ dev.off()
 NDVI_2019 <- DVI_2019 / (img_2019[[4]] + img_2019[[3]])
 NDVI_2020 <- DVI_2020 / (img_2020[[4]] + img_2020[[3]])
 NDVI_2025 <- DVI_2025 / (img_2025[[4]] + img_2025[[3]])
+
 NDVI_diff_2020 <- NDVI_2020 - NDVI_2019
 NDVI_diff_2025 <- NDVI_2025 - NDVI_2020
 
@@ -168,54 +178,48 @@ dev.off()
 
 #utilizzo il paired t.test per valutare se le differenze nei valori NDVI sono statisticamente significative.
 
-# Paired t-Test
-ndvi_2019_vals <- getValues(NDVI_2019)
-ndvi_2020_vals <- getValues(NDVI_2020)
-ndvi_2025_vals <- getValues(NDVI_2025)
-paired_t_test_2020 <- t.test(ndvi_2019_vals, ndvi_2020_vals, paired = TRUE)
-paired_t_test_2025 <- t.test(ndvi_2019_vals, ndvi_2025_vals, paired = TRUE)
-paired_t_test_2020
-paired_t_test_2025
+# 1. Estrazione dei valori NDVI dai raster
+ndvi_2019_values <- getValues(NDVI_2019)
+ndvi_2020_values <- getValues(NDVI_2020)
+ndvi_2025_values <- getValues(NDVI_2025)
 
-####### 5. PCA (Principal Component Analysis) #######
+# 2. T-test tra 2019 e 2020
+t_test_2019_2020 <- t.test(ndvi_2019_values, ndvi_2020_values)
+print(t_test_2019_2020)
 
-#Utilizzo la PCA per ridurre la dimensionalità dei dati e identificare i pattern
-#principali nei valori NDVI.
+#Welch Two Sample t-test
+#data:  ndvi_2019_values and ndvi_2020_values
+#t = 4340.7, df = 12218807, p-value < 2.2e-16
+#alternative hypothesis: true difference in means is not equal to 0
+#95 percent confidence interval:
+#  0.3801574 0.3805009
+#sample estimates:
+#  mean of x mean of y 
+#0.7036319 0.3233028  
 
-# Combina NDVI_2019, NDVI_2020 e NDVI_2025
-NDVI_stack <- stack(NDVI_2019, NDVI_2020, NDVI_2025)
+#La media di NDVI è diminuita significativamente dal 2019 al 2020, 
+#con una riduzione media di circa 0.380 che può indicare una perdita di copertura vegetale.
 
-# Campionamento casuale
-set.seed(1)
-sample_pixels <- sampleRandom(NDVI_stack, size = 10000)
 
-# PCA sui pixel campionati
-PCA <- prcomp(sample_pixels, scale. = TRUE)
-summary(PCA)
+# 4. T-test tra 2020 e 2025
+t_test_2020_2025 <- t.test(ndvi_2020_values, ndvi_2025_values)
+print(t_test_2020_2025)
 
-#Importance of components:
-#PC1    PC2     PC3
-#Standard deviation     1.4712 0.7757 0.48358
-#Proportion of Variance 0.7215 0.2006 0.07795
-#Cumulative Proportion  0.7215 0.9221 1.00000
+#Welch Two Sample t-test
 
-#Standard deviation: La deviazione standard per ciascuna componente principale. 
-#-Valori più alti indicano una maggiore varianza catturata dalla componente.
-#Proportion of Variance: La proporzione di varianza spiegata da ciascuna componente principale.
-#Cumulative Proportion: La proporzione cumulativa di varianza spiegata fino 
-#-a ciascuna componente principale.
+#data:  ndvi_2020_values and ndvi_2025_values
+#t = -4529.7, df = 12328501, p-value < 2.2e-16
+#alternative hypothesis: true difference in means is not equal to 0
+#95 percent confidence interval:
+#  -0.3797466 -0.3794181
+#sample estimates:
+#  mean of x mean of y 
+#0.3233028 0.7028852  
 
-#PC1 (Prima Componente Principale): Spiega il 72.15% della varianza totale nei dati.
-#È la componente più importante e probabilmente rappresenta la variazione principale 
-#tra i pixel (ad esempio, la densità media della vegetazione).
 
-# Proiezione PCA
-PCA_projection <- predict(NDVI_stack, PCA, index = 1:2)
+#NDVI è aumentato significativamente tra il 2020 e il 2025.
+#La differenza media è di circa 0.379, con un'elevata significatività statistica (p-value quasi zero).
 
-# Plot della prima componente principale (PC1)
-png("PCA_PC1.png", width = 800, height = 600)
-plot(PCA_projection[[1]], main = "Prima Componente Principale (PC1)", col = viridis(100))
-dev.off()
 
 ####### 6. Classificazione Land Cover ####### 
 
@@ -286,7 +290,7 @@ dev.off()
 
 # Creazione DataFrame
 # Creazione dei vettori
-copertura_vegetale <- c("ridotta/assente", "buona")
+copertura_vegetale <- c("buona", "ridotta/assente")
 P_2019 <- perc_2019
 P_2020 <- perc_2020
 P_2025 <- perc_2025
@@ -348,3 +352,58 @@ plot_2025 <- ggplot(Land_cover_perc, aes(x = copertura_vegetale, y = P_2025, fil
 print(plot_2025)
 dev.off()
 
+
+
+
+
+
+
+
+
+####### 5. PCA (Principal Component Analysis) #######
+
+#Utilizzo la PCA per ridurre la dimensionalità dei dati e identificare i pattern
+#principali nei valori NDVI.
+
+NDVI_stack_2019_2020 <- stack(NDVI_2019, NDVI_2020)
+sample_pixels_2019_2020 <- sampleRandom(NDVI_stack_2019_2020, size = 10000)
+PCA_2019_2020 <- prcomp(sample_pixels_2019_2020, scale. = TRUE)
+summary(PCA_2019_2020)
+
+# Salvo il plot della prima componente principale (PC1) per 2019-2020 in un file PNG
+PCA_projection_2019_2020 <- predict(NDVI_stack_2019_2020, PCA_2019_2020, index = 1)
+png("PCA_PC1_2019_2020.png", width = 800, height = 600)
+plot(PCA_projection_2019_2020[[1]], main = "PC1 2019-2020", col = viridis(100))
+dev.off()
+
+#Importance of components:
+#  PC1    PC2
+#Standard deviation     1.222 0.7114
+#Proportion of Variance 0.747 0.2530
+#Cumulative Proportion  0.747 1.0000
+
+# PCA su 2020-2025
+NDVI_stack_2020_2025 <- stack(NDVI_2020, NDVI_2025)
+sample_pixels_2020_2025 <- sampleRandom(NDVI_stack_2020_2025, size = 10000)
+PCA_2020_2025 <- prcomp(sample_pixels_2020_2025, scale. = TRUE)
+summary(PCA_2020_2025)
+
+# Salvo il plot della prima componente principale (PC1) per 2020-2025 in un file PNG
+PCA_projection_2020_2025 <- predict(NDVI_stack_2020_2025, PCA_2020_2025, index = 1)
+
+png("PCA_PC1_2020_2025.png", width = 800, height = 600)
+plot(PCA_projection_2020_2025[[1]], main = "PC1 2020-2025", col = viridis(100))
+dev.off()
+
+#Importance of components:
+#PC1    PC2
+#Standard deviation     1.2096 0.7328
+#Proportion of Variance 0.7315 0.2685
+#Cumulative Proportion  0.7315 1.0000
+
+
+#Standard deviation: La deviazione standard per ciascuna componente principale. 
+#-Valori più alti indicano una maggiore varianza catturata dalla componente.
+#Proportion of Variance: La proporzione di varianza spiegata da ciascuna componente principale.
+#Cumulative Proportion: La proporzione cumulativa di varianza spiegata fino 
+#-a ciascuna componente principale.
