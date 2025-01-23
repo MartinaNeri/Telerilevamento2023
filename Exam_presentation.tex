@@ -187,17 +187,17 @@ plot(NDVI_diff_2024, col = viridis(10), main = "Differenza NDVI 2024-2020")
 \newline
 \textbf{Procedura:}
 \begin{lstlisting}
-# Campionamento casuale
+# PCA su 2019-2020
 NDVI_stack_2019_2020 <- stack(NDVI_2019, NDVI_2020)
 sample_pixels_2019_2020 <- sampleRandom(NDVI_stack_2019_2020, size = 10000)
-
-# Esecuzione PCA
 PCA_2019_2020 <- prcomp(sample_pixels_2019_2020, scale. = TRUE)
 summary(PCA_2019_2020)
 
 # Proiezione
 PCA_projection_2019_2020 <- predict(NDVI_stack_2019_2020, PCA_2019_2020, index = 1)
+png("PCA_PC1_2019_2020.png", width = 800, height = 600)
 plot(PCA_projection_2019_2020[[1]], main = "PC1 2019-2020", col = viridis(100))
+dev.off()
 \end{lstlisting}
 \end{frame}
 
@@ -216,7 +216,7 @@ plot(PCA_projection_2019_2020[[1]], main = "PC1 2019-2020", col = viridis(100))
             \toprule
             & PC1 \\
             \midrule
-            Standard deviation     & 1.1176 \\
+            Standard deviation     & 1.1177 \\
             Proportion of Variance & 0.6246 \\
             Cumulative Proportion  & 0.6246 \\
             \bottomrule
@@ -230,8 +230,6 @@ plot(PCA_projection_2019_2020[[1]], main = "PC1 2019-2020", col = viridis(100))
 # PCA su 2020-2024
 NDVI_stack_2020_2024 <- stack(NDVI_2020, NDVI_2024)
 sample_pixels_2020_2024 <- sampleRandom(NDVI_stack_2020_2024, size = 10000)
-
-# Esecuzione PCA
 PCA_2020_2024 <- prcomp(sample_pixels_2020_2024, scale. = TRUE)
 summary(PCA_2020_2024)
 
@@ -239,6 +237,7 @@ summary(PCA_2020_2024)
 PCA_projection_2020_2024 <- predict(NDVI_stack_2020_2024, PCA_2020_2024, index = 1)
 png("PCA_PC1_2020_2024.png", width = 800, height = 600)
 plot(PCA_projection_2020_2024[[1]], main = "PC1 2020-2024", col = viridis(100))
+dev.off()
 \end{lstlisting}
 \end{frame}
 
@@ -257,9 +256,9 @@ plot(PCA_projection_2020_2024[[1]], main = "PC1 2020-2024", col = viridis(100))
             \toprule
             & PC1 \\
             \midrule
-            Standard deviation     & 1.1826 \\
-            Proportion of Variance & 0.6993 \\
-            Cumulative Proportion  & 0.6993 \\
+            Standard deviation     & 1.1825 \\
+            Proportion of Variance & 0.6992 \\
+            Cumulative Proportion  & 0.6992 \\
             \bottomrule
         \end{tabular}
     \end{table}
@@ -276,12 +275,12 @@ plot(PCA_projection_2020_2024[[1]], main = "PC1 2020-2024", col = viridis(100))
 \begin{lstlisting}
 # Estrazione dei valori per il 2019
 single_nr_2019 <- getValues(img_2019)
-# Classificazione in due cluster
-k_cluster_2019 <- kmeans(single_nr_2019, centers = 2)
+# Classificazione in tre cluster
+k_cluster_2019 <- kmeans(single_nr_2019, centers = 3)
 # Creazione immagine classificata
 img_2019_class <- setValues(img_2019[[1]], k_cluster_2019$cluster)
 # Visualizzazione
-plot(img_2019_class, col = c("blue", "yellow"), main = "Classificazione 2019")
+plot(img_2019_class, col = plasma(3), main = "Classificazione Land Cover 2019")
 \end{lstlisting}
 Simile per 2020 e 2024.
 \end{frame}
@@ -307,7 +306,7 @@ Simile per 2020 e 2024.
 \begin{frame}[fragile]{\textbf{Confronto Copertura Vegetale}}
 \textbf{Percentuali di copertura vegetale:}
 \begin{lstlisting}
-copertura_vegetale <- c("ridotta/assente", "buona")
+copertura_vegetale <- c("buona", "ridotta", "assente")
 # Supponendo che P_2019, P_2020, P_2024 siano definiti
 Land_cover_perc <- data.frame(copertura_vegetale, P_2019, P_2020, P_2024)
 \end{lstlisting}
@@ -332,7 +331,8 @@ Land_cover_perc <- data.frame(copertura_vegetale, P_2019, P_2020, P_2024)
 \begin{frame}{\textbf{Conclusioni}}
 \begin{itemize}
     \item Gli incendi del 2019 hanno ridotto significativamente la copertura vegetale.
-    \item La copertura vegetale ha continuato a diminuire nel 2024, ma il tasso di diminuzione è stato più basso.
+    \item Nel 2020, la copertura vegetale ha subito ulteriori danni.
+    \item Nel 2024, si osserva una lenta ripresa con un aumento delle zone a ridotta vegetazione e una diminuzione di quelle a vegetazione assente.
 \end{itemize}
 \end{frame}
 
