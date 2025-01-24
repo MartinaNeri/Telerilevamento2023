@@ -32,8 +32,8 @@
     language=R
 }
 
-\title{\textbf{\textcolor{verdeScuro}{Analisi Incendi Australia 2019-2024}}}
-\subtitle{Monitoraggio della foresta australiana colpita dagli incendi tra il 2019 e il 2024}
+\title{\textbf{\textcolor{verdeScuro}{Analisi degli Incendi nel Parco nazionale Kosciuszko (New South Wales, Australia) tra 2019-2020-2025}}}
+\subtitle{Monitoraggio della foresta australiana colpita dagli incendi tra il 2019 e il 2025}
 \author{Martina Neri}
 %\date{}
 
@@ -42,14 +42,14 @@
 \maketitle
 
 \begin{frame}
-\frametitle{Outline}
+\frametitle{Indice}
 \tableofcontents
 \end{frame}
 
 \section{Introduzione}
 
 \begin{frame}{\textbf{Introduzione}}
-\textbf{Titolo:} Analisi Incendi in Australia (2019-2020-2024)
+\textbf{Titolo:} Analisi Incendi nel Parco nazionale Kosciuszko (2019-2025)
 \newline
 \newline
 \textbf{Obiettivo:} Esaminare gli effetti degli incendi forestali del 2019 in Australia sull'ambiente tramite immagini satellitari.
@@ -58,75 +58,65 @@
 \textbf{Approccio:} Confronto tra immagini pre e post incendio e analisi temporale degli indici spettrali e della Land cover.
 \end{frame}
 
-\section{Dati e Software Utilizzati}
+\section{Materiali e Metodi}
 
-\begin{frame}{\textbf{Dati e Software Utilizzati}}
-\textbf{Dataset:} Immagini satellitari di tre date chiave (2019, 2020, 2024).
+\subsection{Area di Studio e Dati}
+
+\begin{frame}{\textbf{Area di Studio e Dati}}
+\textbf{Area di Studio:} Parco nazionale Kosciuszko, New South Wales, Australia
 \newline
 \newline
-\textbf{Software:} R con i pacchetti \texttt{raster}, \texttt{ggplot2}, \texttt{viridis}.
+\textbf{Estensione:} 1887.09 km\(^2\)
 \newline
 \newline
-\textbf{Indici Analizzati:}
-\begin{itemize}
-    \item DVI (Difference Vegetation Index)
-    \item NDVI (Normalized Difference Vegetation Index)
-\end{itemize}
-\newline
-\textbf{Strumenti di Analisi:}
-\begin{itemize}
-    \item PCA (Analisi delle Componenti Principali)
-    \item Classificazione Land Cover (K-Means)
-\end{itemize}
+\textbf{Dataset:} Immagini satellitari (Sentinel-2) di tre date chiave (2019, 2020, 2025) nel mese di gennai.
 \end{frame}
 
-\section{Caricamento e Visualizzazione dei Dati}
-
-\begin{frame}[fragile]{\textbf{Caricamento e Visualizzazione dei Dati}}
-\textbf{Impostazione della working directory:}
-\begin{lstlisting}
-setwd("C:/lab/Esame_telerilevamento/prova")
-\end{lstlisting}
-
-\textbf{Importazione delle immagini:}
-\begin{lstlisting}
-rlist_2019 <- list.files(pattern = "2019-02-22")
-import_2019 <- lapply(rlist_2019, raster)
-img_2019 <- stack(import_2019)
-\end{lstlisting}
-
-\textbf{Visualizzazione delle immagini:}
-\begin{lstlisting}
-par(mfrow = c(1, 2))
-plotRGB(img_2019, 3, 2, 1, stretch = "lin") #True color
-plotRGB(img_2019, 4, 3, 2, stretch = "lin") #NIR
-\end{lstlisting}
-Simile per 2020 e 2024.
+\begin{frame}{\textbf{Immagini RGB in True Color}}
+\begin{columns}
+    \column{1\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{RGB_comparison.png}
+    \caption{RGB 2019-2020-2025}
+\end{columns}
 \end{frame}
 
-\section{Analisi degli Indici Spettrali}
+\begin{frame}{\textbf{Immagini NIR}}
+\begin{columns}
+    \column{1\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{RGB_comparison_2.png}
+    \caption{NIR 2019-2020-2025}
+\end{columns}
+\end{frame}
 
-\begin{frame}[fragile]{\textbf{Analisi degli Indici Spettrali}}
+\subsection{Software Utilizzati}
+
+\begin{frame}{\textbf{Software Utilizzati}}
+\textbf{Software:} R con i pacchetti \texttt{raster}, \texttt{ggplot2}, \texttt{viridis}, Copernicus Browser.
+\end{frame}
+
+\section{Metodologie applicate}
+
+\subsection{Indici Spettrali}
+
+\begin{frame}{\textbf{Indici Spettrali: Definizioni e Formule}}
+\textbf{Difference Vegetation Index (DVI):}
+\newline
+\begin{equation}
+\text{DVI} = \text{NIR} - \text{Red}
+\end{equation}
+\newline
+Il DVI misura la densità della vegetazione sottraendo la riflettanza nel rosso dalla riflettanza nell'infrarosso vicino (NIR).
+\end{frame}
+
+\begin{frame}[fragile]{\textbf{Calcolo degli Indici Spettrali}}
 \textbf{DVI (Difference Vegetation Index):}
 \begin{lstlisting}
-# Formula
-DVI_2019 <- img_2019[[4]] - img_2019[[3]]
-DVI_2020 <- img_2020[[4]] - img_2020[[3]]
-DVI_2024 <- img_2024[[4]] - img_2024[[3]]
-
-# Differenze tra anni
-DVI_diff_2020 <- DVI_2020 - DVI_2019 #danni dati dall'incendio
-DVI_diff_2024 <- DVI_2024 - DVI_2020 #ripristino vegetazione
-
-# Visualizzazione
-par(mfrow = c(1, 3))
-plot(DVI_2019, col = viridis(10), main = "DVI 2019")
-plot(DVI_2020, col = viridis(10), main = "DVI 2020")
-plot(DVI_2024, col = viridis(10), main = "DVI 2024")
+# Calcolo DVI
+DVI_2019 <- img_2019[[4]] - img_2019[[3]] # DVI = NIR - Rosso
+#uguale per 2020 e 2025
 \end{lstlisting}
-\end{frame}
-
-\begin{frame}{\textbf{Immagini DVI}}
 \begin{columns}
     \column{1\textwidth}
     \centering
@@ -134,27 +124,38 @@ plot(DVI_2024, col = viridis(10), main = "DVI 2024")
 \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{\textbf{Indice NDVI}}
-\textbf{NDVI (Normalized Difference Vegetation Index):}
+\begin{frame}[fragile]{\textbf{Calcolo degli Indici Spettrali}}
+\textbf{DVI (Difference Vegetation Index):}
 \begin{lstlisting}
-# Formula
-NDVI_2019 <- DVI_2019 / (img_2019[[4]] + img_2019[[3]])
-NDVI_2020 <- DVI_2020 / (img_2020[[4]] + img_2020[[3]])
-NDVI_2024 <- DVI_2024 / (img_2024[[4]] + img_2024[[3]])
-
-# Cambiamenti temporali
-NDVI_diff_2020 <- NDVI_2020 - NDVI_2019 #danni dati dall'incendio
-NDVI_diff_2024 <- NDVI_2024 - NDVI_2020 #ripristino vegetazione
-
-# Visualizzazione
-par(mfrow = c(1, 3))
-plot(NDVI_2019, col = viridis(10), main = "NDVI 2019")
-plot(NDVI_2020, col = viridis(10), main = "NDVI 2020")
-plot(NDVI_2024, col = viridis(10), main = "NDVI 2024")
+# Differenze DVI
+DVI_diff_2020 <- DVI_2020 - DVI_2019  # Differenza tra 2020 e 2029
+DVI_diff_2025 <- DVI_2025 - DVI_2020  # Differenza tra 2025 e 2020
 \end{lstlisting}
+\begin{columns}
+    \column{1\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{DVI_diff.png}
+\end{columns}
 \end{frame}
 
-\begin{frame}{\textbf{Immagini NDVI}}
+\begin{frame}{\textbf{Indici Spettrali: Definizioni e Formule}}
+\textbf{Normalized Difference Vegetation Index (NDVI):}
+\newline
+\begin{equation}
+\text{NDVI} = \frac{\text{NIR} - \text{Red}}{\text{NIR} + \text{Red}}
+\end{equation}
+\newline
+L'NDVI valuta la salute della vegetazione normalizzando la differenza tra la riflettanza nel NIR e nel rosso.
+\end{frame}
+
+\begin{frame}[fragile]{\textbf{Calcolo degli Indici Spettrali}}
+\textbf{NDVI (Normalized Difference Vegetation Index):}
+\begin{lstlisting}
+# Calcolo NDVI
+NDVI_2019 <- DVI / (img_2019[[4]] + img_2019[[3]])
+# NDVI = DVI/(NIR + Rosso)
+#uguale per 2020 e 2025
+\end{lstlisting}
 \begin{columns}
     \column{1\textwidth}
     \centering
@@ -162,16 +163,13 @@ plot(NDVI_2024, col = viridis(10), main = "NDVI 2024")
 \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{\textbf{Differenze NDVI}}
+\begin{frame}[fragile]{\textbf{Calcolo degli Indici Spettrali}}
+\textbf{NDVI (Normalized Difference Vegetation Index):}
 \begin{lstlisting}
-# Visualizzazione delle differenze
-par(mfrow = c(1, 2))
-plot(NDVI_diff_2020, col = viridis(10), main = "Differenza NDVI 2020-2019")
-plot(NDVI_diff_2024, col = viridis(10), main = "Differenza NDVI 2024-2020")
+# Differenze NDVI
+NDVI_diff_2020 <- NDVI_2020 - NDVI_2019 
+NDVI_diff_2025 <- NDVI_2025 - NDVI_2020 
 \end{lstlisting}
-\end{frame}
-
-\begin{frame}{\textbf{Differenze NDVI}}
 \begin{columns}
     \column{1\textwidth}
     \centering
@@ -179,7 +177,8 @@ plot(NDVI_diff_2024, col = viridis(10), main = "Differenza NDVI 2024-2020")
 \end{columns}
 \end{frame}
 
-\section{PCA (Analisi delle Componenti Principali)}
+
+\subsection{PCA (Analisi delle Componenti Principali)}
 
 \begin{frame}[fragile]{\textbf{PCA (Analisi delle Componenti Principali)}}
 \textbf{Obiettivo:} Identificare pattern principali nei valori NDVI.
@@ -187,17 +186,12 @@ plot(NDVI_diff_2024, col = viridis(10), main = "Differenza NDVI 2024-2020")
 \newline
 \textbf{Procedura:}
 \begin{lstlisting}
-# PCA su 2019-2020
-NDVI_stack_2019_2020 <- stack(NDVI_2019, NDVI_2020)
-sample_pixels_2019_2020 <- sampleRandom(NDVI_stack_2019_2020, size = 10000)
-PCA_2019_2020 <- prcomp(sample_pixels_2019_2020, scale. = TRUE)
-summary(PCA_2019_2020)
-
-# Proiezione
-PCA_projection_2019_2020 <- predict(NDVI_stack_2019_2020, PCA_2019_2020, index = 1)
-png("PCA_PC1_2019_2020.png", width = 800, height = 600)
-plot(PCA_projection_2019_2020[[1]], main = "PC1 2019-2020", col = viridis(100))
-dev.off()
+# PCA sui set di dati (2019-2020 e 2020-2025)
+#Creazione dello stack NDVI con la funzione stack
+#Campionamento casuale dei pixel con sampleRandom
+#Esecuzione della PCA con prcomp
+# Proiezione della PCA con la funzione predict
+#Infine visualizzazione dei risultati
 \end{lstlisting}
 \end{frame}
 
@@ -216,36 +210,20 @@ dev.off()
             \toprule
             & PC1 \\
             \midrule
-            Standard deviation     & 1.1177 \\
-            Proportion of Variance & 0.6246 \\
-            Cumulative Proportion  & 0.6246 \\
+            Standard deviation     & 1.1246  \\
+            Proportion of Variance & 0.6324 \\
+            Cumulative Proportion  & 0.6324 \\
             \bottomrule
         \end{tabular}
     \end{table}
 \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{\textbf{PCA (Analisi delle Componenti Principali)}}
-\begin{lstlisting}
-# PCA su 2020-2024
-NDVI_stack_2020_2024 <- stack(NDVI_2020, NDVI_2024)
-sample_pixels_2020_2024 <- sampleRandom(NDVI_stack_2020_2024, size = 10000)
-PCA_2020_2024 <- prcomp(sample_pixels_2020_2024, scale. = TRUE)
-summary(PCA_2020_2024)
-
-# Proiezione
-PCA_projection_2020_2024 <- predict(NDVI_stack_2020_2024, PCA_2020_2024, index = 1)
-png("PCA_PC1_2020_2024.png", width = 800, height = 600)
-plot(PCA_projection_2020_2024[[1]], main = "PC1 2020-2024", col = viridis(100))
-dev.off()
-\end{lstlisting}
-\end{frame}
-
-\begin{frame}{\textbf{PCA 2020-2024}}
+\begin{frame}{\textbf{PCA 2020-2025}}
 \begin{columns}
     \column{0.5\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{PCA_PC1_2020_2024.png}
+    \includegraphics[width=\textwidth]{PCA_PC1_2020_2025.png}
     
     \column{0.5\textwidth}
     \centering
@@ -256,33 +234,31 @@ dev.off()
             \toprule
             & PC1 \\
             \midrule
-            Standard deviation     & 1.1825 \\
-            Proportion of Variance & 0.6992 \\
-            Cumulative Proportion  & 0.6992 \\
+            Standard deviation     & 1.123 \\
+            Proportion of Variance & 0.630 \\
+            Cumulative Proportion  & 0.630 \\
             \bottomrule
         \end{tabular}
     \end{table}
 \end{columns}
 \end{frame}
 
-\section{Classificazione Land Cover}
+
+\subsection{Classificazione Land Cover}
 
 \begin{frame}[fragile]{\textbf{Classificazione Land Cover}}
-\textbf{Metodo:} K-Means clustering su immagini raster.
+\textbf{Obiettivo:} classificare l'area di studio in due categorie di copertura vegetale ("buona", "ridotta/assente") utilizzando l'algoritmo di clustering K-Means. Questo permette di osservare e quantificare i cambiamenti nella copertura vegetale nel tempo.
 \newline
 \newline
-\textbf{Risultati per il 2019:}
+\textbf{Procedura:}
 \begin{lstlisting}
-# Estrazione dei valori per il 2019
-single_nr_2019 <- getValues(img_2019)
-# Classificazione in tre cluster
-k_cluster_2019 <- kmeans(single_nr_2019, centers = 3)
-# Creazione immagine classificata
-img_2019_class <- setValues(img_2019[[1]], k_cluster_2019$cluster)
-# Visualizzazione
-plot(img_2019_class, col = plasma(3), main = "Classificazione Land Cover 2019")
+# Classificazione Land Cover nei diversi anni (2019, 2020 e 2025)
+# imposto il seme per la riproducibilità con set.seed(2)
+#Estraggo i valori dei pixel con getValues()
+#clusterizzo con kmeans() indicando il numero di centri
+#Creo l'immagine classifica tramite tasetValues()
+#Calcolo delle frequenze con freq() e ncell()
 \end{lstlisting}
-Simile per 2020 e 2024.
 \end{frame}
 
 \begin{frame}{\textbf{Immagini Classificazione Land Cover}}
@@ -290,61 +266,88 @@ Simile per 2020 e 2024.
     \column{0.33\textwidth}
     \centering
     \includegraphics[width=\textwidth]{Land_Cover_2019.png}
-    
+    \caption{Land Cover 2019}
+
     \column{0.33\textwidth}
     \centering
     \includegraphics[width=\textwidth]{Land_Cover_2020.png}
-    
+    \caption{Land Cover 2020}
+
     \column{0.33\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{Land_Cover_2024.png}
+    \includegraphics[width=\textwidth]{Land_Cover_2025.png}
+    \caption{Land Cover 2025}
 \end{columns}
 \end{frame}
 
-\section{Confronto Copertura Vegetale}
-
-\begin{frame}[fragile]{\textbf{Confronto Copertura Vegetale}}
-\textbf{Percentuali di copertura vegetale:}
-\begin{lstlisting}
-copertura_vegetale <- c("buona", "ridotta", "assente")
-# Supponendo che P_2019, P_2020, P_2024 siano definiti
-Land_cover_perc <- data.frame(copertura_vegetale, P_2019, P_2020, P_2024)
-\end{lstlisting}
-
+\begin{frame}{\textbf{Percentuali di Copertura Vegetale}}
 \begin{columns}
     \column{0.33\textwidth}
     \centering
     \includegraphics[width=\textwidth]{Percentuali_Land_Cover_2019.png}
-    
+    \caption{Percentuali Land Cover 2019}
+
     \column{0.33\textwidth}
     \centering
     \includegraphics[width=\textwidth]{Percentuali_Land_Cover_2020.png}
-    
+    \caption{Percentuali Land Cover 2020}
+
     \column{0.33\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{Percentuali_Land_Cover_2024.png}
+    \includegraphics[width=\textwidth]{Percentuali_Land_Cover_2025.png}
+    \caption{Percentuali Land Cover 2025}
 \end{columns}
 \end{frame}
 
-\section{Conclusioni}
+\subsection{T-Test}
+\begin{frame}[fragile]{\textbf{T-Test}}
+\textbf{Obiettivo:} determinare se c'è una differenza significativa tra i valori medi di NDVI (Normalized Difference Vegetation Index) nei due anni confrontati.
+\newline
+\newline
+\textbf{Procedura:}
+\begin{lstlisting}
+# Estrazione dei valori NDVI dai raster dei 3 anni tramite getValues
+# T-test tra i due set di dati con t.test()
+#print(t_test_2019_2020)
+\end{lstlisting}
+\end{frame}
 
+\begin{frame}[fragile]{\textbf{T-Test}}
+\textbf{Risultati T-Test:}
+\begin{itemize}
+    \item \textbf{T-test tra 2019 e 2020:}
+    \begin{itemize}
+        \item t = 3696.3, df = 11503862, p-value < 2.2e-16
+        \item 95 percent confidence interval: 0.3565054 - 0.3568836
+        \item mean of x = 0.6730575, mean of y = 0.3163630
+        \item La media di NDVI è diminuita significativamente (p-value < 2.2e-16) dal 2019 al 2020, con una riduzione media di circa 0.356 che indica una perdita di copertura vegetale.
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\textbf{T-Test}}
+\textbf{Risultati T-Test 2020-2025:}
+\begin{itemize}
+     \item \textbf{T-test tra 2020 e 2025:}
+    \begin{itemize}
+        \item t = -3679.7, df = 11438646, p-value < 2.2e-16
+        \item 95 percent confidence interval: -0.3334739 - -0.3331188
+        \item mean of x = 0.3163630, mean of y = 0.6496593
+        \item NDVI è aumentato significativamente tra il 2020 e il 2025. La differenza media è di circa -0.333, con un'elevata significatività statistica (p-value < 2.2e-16).
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\section{Conclusioni}
 \begin{frame}{\textbf{Conclusioni}}
 \begin{itemize}
-    \item Gli incendi del 2019 hanno ridotto significativamente la copertura vegetale.
-    \item Nel 2020, la copertura vegetale ha subito ulteriori danni.
-    \item Nel 2024, si osserva una lenta ripresa con un aumento delle zone a ridotta vegetazione e una diminuzione di quelle a vegetazione assente.
+    \item Gli incendi del 2019 hanno avuto un impatto significativo sulla copertura vegetale.
+    \item La ripresa vegetale è lenta ma evidente nel 2025.
+    \item Necessità di ulteriori studi per monitorare la ripresa a lungo termine.
 \end{itemize}
 \end{frame}
 
-\section{Studi Futuri}
-
-\begin{frame}{\textbf{Studi Futuri}}
-\begin{itemize}
-    \item Aggiunta di ulteriori anni per un'analisi più dettagliata.
-    \item Studio della biodiversità e correlazioni con i dati satellitari.
-    \item Analisi dell'efficacia degli interventi di ripristino.
-\end{itemize}
-\end{frame}
+\section{Bibliografia}
 
 \begin{frame}{}
 \centering
