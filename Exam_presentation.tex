@@ -85,7 +85,7 @@ Copre un'area di circa 6.900 km² e ospita ecosistemi unici, tra cui tundra alpi
 \end{columns}
 \end{frame}
 
-\begin{frame}{\textbf{Immagini NIR (2019-2020-2025)}}
+\begin{frame}{\textbf{Immagini RGB in False Color (2019-2020-2025)}}
 \begin{columns}
     \column{1\textwidth}
     \centering
@@ -133,20 +133,6 @@ DVI_2019 <- img_2019[[4]] - img_2019[[3]] # DVI = NIR - Rosso
     \column{1\textwidth}
     \centering
     \includegraphics[width=\textwidth]{DVI.png}
-\end{columns}
-\end{frame}
-
-\begin{frame}[fragile]{\textbf{Calcolo degli Indici Spettrali}}
-\textbf{DVI (Difference Vegetation Index):}
-\begin{lstlisting}
-# Differenze DVI
-DVI_diff_2020 <- DVI_2020 - DVI_2019  # Differenza tra 2020 e 2029
-DVI_diff_2025 <- DVI_2025 - DVI_2020  # Differenza tra 2025 e 2020
-\end{lstlisting}
-\begin{columns}
-    \column{1\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{DVI_diff.png}
 \end{columns}
 \end{frame}
 
@@ -362,12 +348,13 @@ NDVI_diff_2025 <- NDVI_2025 - NDVI_2020
 \end{frame}
 
 \begin{frame}[fragile]{\textbf{Conclusioni}}
-\textbf{Pattern spaziali:} L’analisi delle componenti principali (PCA) rivela i principali driver di cambiamento nella copertura vegetale, suggerendo che alcune aree del parco abbiano mostrato una resilienza maggiore rispetto ad altre.
+\textbf{Pattern spaziali:} L’analisi delle componenti principali (PCA) ha permesso di individuare le aree con maggiore vulnerabilità, suggerendo che alcune aree del parco abbiano mostrato una resilienza maggiore rispetto ad altre.
 \end{frame}
 
 \section{Prospettive future}
 \begin{frame}[fragile]{\textbf{Prospettive future}}
-\textbf Dal 2020 al 2025 si osserva una graduale ripresa della vegetazione, con un aumento significativo dei valori medi di NDVI (incremento medio di 0.333), testimoniando un progressivo ritorno della salute ecologica dell'area. Tuttavia, la ripresa non è omogenea in tutte le zone.     
+\textbf Sarebbe interessante ampliare l'analisi statistica del progetto, includendo un maggior numero di anni per verificare l'andamento del ripristino della vegetazione. 
+Inoltre, sarebbe utile continuare il monitoraggio anche negli anni futuri.  
 \end{frame}
 
 \begin{frame}{}
