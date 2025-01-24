@@ -42,6 +42,11 @@
 \maketitle
 
 \begin{frame}
+\frametitle{Repository}
+\href{https://github.com/MartinaNeri/Telerilevamento2023}{https://github.com/MartinaNeri/Telerilevamento2023}
+\end{frame}
+
+\begin{frame}
 \frametitle{Indice}
 \tableofcontents
 \end{frame}
@@ -49,13 +54,10 @@
 \section{Introduzione}
 
 \begin{frame}{\textbf{Introduzione}}
-\textbf{Titolo:} Analisi Incendi nel Parco nazionale Kosciuszko (2019-2025)
+\textbf{Obiettivo:} Esaminare gli effetti degli incendi forestali del 2019 e dell'eventuale successivo ripristino della vegetazione in Australia tramite immagini satellitari.
 \newline
 \newline
-\textbf{Obiettivo:} Esaminare gli effetti degli incendi forestali del 2019 in Australia sull'ambiente tramite immagini satellitari.
-\newline
-\newline
-\textbf{Approccio:} Confronto tra immagini pre e post incendio e analisi temporale degli indici spettrali e della Land cover.
+\textbf{Approccio:} Confronto tra immagini pre e post incendio, analisi temporale degli indici spettrali tramite PCA, Land cover e t.test.
 \end{frame}
 
 \section{Materiali e Metodi}
@@ -63,16 +65,18 @@
 \subsection{Area di Studio e Dati}
 
 \begin{frame}{\textbf{Area di Studio e Dati}}
-\textbf{Area di Studio:} Parco nazionale Kosciuszko, New South Wales, Australia
+\textbf{Area di Studio:} Parco nazionale Kosciuszko, New South Wales, Australia.
+Al suo interno, si trova il monte Kosciuszko, la montagna più alta dell'Australia.
+Copre un'area di circa 6.900 km² e ospita ecosistemi unici, tra cui tundra alpina, foreste e praterie.
 \newline
 \newline
 \textbf{Estensione:} 1887.09 km\(^2\)
 \newline
 \newline
-\textbf{Dataset:} Immagini satellitari (Sentinel-2) di tre date chiave (2019, 2020, 2025) nel mese di gennai.
+\textbf{Dataset:} Immagini satellitari (Sentinel-2) di tre date chiave (2019, 2020, 2025) nel mese di gennaio.
 \end{frame}
 
-\begin{frame}{\textbf{Immagini RGB in True Color}}
+\begin{frame}{\textbf{Immagini RGB in True Color (2019-2020-2025)}}
 \begin{columns}
     \column{1\textwidth}
     \centering
@@ -81,7 +85,7 @@
 \end{columns}
 \end{frame}
 
-\begin{frame}{\textbf{Immagini NIR}}
+\begin{frame}{\textbf{Immagini NIR (2019-2020-2025)}}
 \begin{columns}
     \column{1\textwidth}
     \centering
@@ -93,8 +97,14 @@
 \subsection{Software Utilizzati}
 
 \begin{frame}{\textbf{Software Utilizzati}}
-\textbf{Software:} R con i pacchetti \texttt{raster}, \texttt{ggplot2}, \texttt{viridis}, Copernicus Browser.
+\textbf{Software:} R con i seguenti pacchetti:
+\begin{itemize}
+    \item \texttt{raster}{ per la gestione delle immagini raster}
+    \item \texttt{ggplot2}{ per la visualizzazione dei dati}
+    \item \texttt{viridis}{ per rappresentare i dati spaziali in modo chiaro ed utile}
+\end{itemize}
 \end{frame}
+
 
 \section{Metodologie applicate}
 
@@ -107,7 +117,9 @@
 \text{DVI} = \text{NIR} - \text{Red}
 \end{equation}
 \newline
-Il DVI misura la densità della vegetazione sottraendo la riflettanza nel rosso dalla riflettanza nell'infrarosso vicino (NIR).
+Il DVI misura la densità della vegetazione sottraendo la riflettanza nel rosso dalla riflettanza nell'infrarosso vicino (NIR). 
+\newline
+Le piante sane riflettono più luce nel NIR rispetto al rosso, quindi un DVI elevato indica una vegetazione densa e sana.
 \end{frame}
 
 \begin{frame}[fragile]{\textbf{Calcolo degli Indici Spettrali}}
@@ -181,12 +193,13 @@ NDVI_diff_2025 <- NDVI_2025 - NDVI_2020
 \subsection{PCA (Analisi delle Componenti Principali)}
 
 \begin{frame}[fragile]{\textbf{PCA (Analisi delle Componenti Principali)}}
-\textbf{Obiettivo:} Identificare pattern principali nei valori NDVI.
+\textbf{Obiettivo:} Ridurre la complessità dei dati di NDVI nei due periodi (2019-2020 e 2020-2025) identificando i principali pattern di cambiamento.
+
 \newline
 \newline
 \textbf{Procedura:}
 \begin{lstlisting}
-# PCA sui set di dati (2019-2020 e 2020-2025)
+#PCA sui set di dati (2019-2020 e 2020-2025)
 #Creazione dello stack NDVI con la funzione stack
 #Campionamento casuale dei pixel con sampleRandom
 #Esecuzione della PCA con prcomp
@@ -212,7 +225,6 @@ NDVI_diff_2025 <- NDVI_2025 - NDVI_2020
             \midrule
             Standard deviation     & 1.1246  \\
             Proportion of Variance & 0.6324 \\
-            Cumulative Proportion  & 0.6324 \\
             \bottomrule
         \end{tabular}
     \end{table}
@@ -236,7 +248,6 @@ NDVI_diff_2025 <- NDVI_2025 - NDVI_2020
             \midrule
             Standard deviation     & 1.123 \\
             Proportion of Variance & 0.630 \\
-            Cumulative Proportion  & 0.630 \\
             \bottomrule
         \end{tabular}
     \end{table}
@@ -247,16 +258,16 @@ NDVI_diff_2025 <- NDVI_2025 - NDVI_2020
 \subsection{Classificazione Land Cover}
 
 \begin{frame}[fragile]{\textbf{Classificazione Land Cover}}
-\textbf{Obiettivo:} classificare l'area di studio in due categorie di copertura vegetale ("buona", "ridotta/assente") utilizzando l'algoritmo di clustering K-Means. Questo permette di osservare e quantificare i cambiamenti nella copertura vegetale nel tempo.
+\textbf{Obiettivo:} Classificare l'area di studio in due categorie di copertura vegetale ("buona", "ridotta/assente") utilizzando l'algoritmo di clustering K-Means. Per osservare e quantificare meglio i cambiamenti nella copertura vegetale nel tempo.
 \newline
 \newline
 \textbf{Procedura:}
 \begin{lstlisting}
-# Classificazione Land Cover nei diversi anni (2019, 2020 e 2025)
-# imposto il seme per la riproducibilità con set.seed(2)
+#Classificazione Land Cover nei diversi anni (2019, 2020 e 2025)
+#imposto il seme per la riproducibilità con set.seed(2)
 #Estraggo i valori dei pixel con getValues()
 #clusterizzo con kmeans() indicando il numero di centri
-#Creo l'immagine classifica tramite tasetValues()
+#Creo l'immagine classifica tramite setValues()
 #Calcolo delle frequenze con freq() e ncell()
 \end{lstlisting}
 \end{frame}
@@ -301,14 +312,14 @@ NDVI_diff_2025 <- NDVI_2025 - NDVI_2020
 
 \subsection{T-Test}
 \begin{frame}[fragile]{\textbf{T-Test}}
-\textbf{Obiettivo:} determinare se c'è una differenza significativa tra i valori medi di NDVI (Normalized Difference Vegetation Index) nei due anni confrontati.
+\textbf{Obiettivo:} Determinare se c'è una differenza significativa tra i valori medi di NDVI (Normalized Difference Vegetation Index) nei due anni confrontati.
 \newline
 \newline
 \textbf{Procedura:}
 \begin{lstlisting}
-# Estrazione dei valori NDVI dai raster dei 3 anni tramite getValues
+# Estrazione dei valori NDVI dai raster dei tramite getValues
 # T-test tra i due set di dati con t.test()
-#print(t_test_2019_2020)
+# Stampo i risultati con print()
 \end{lstlisting}
 \end{frame}
 
@@ -320,6 +331,7 @@ NDVI_diff_2025 <- NDVI_2025 - NDVI_2020
         \item t = 3696.3, df = 11503862, p-value < 2.2e-16
         \item 95 percent confidence interval: 0.3565054 - 0.3568836
         \item mean of x = 0.6730575, mean of y = 0.3163630
+        \newline
         \item La media di NDVI è diminuita significativamente (p-value < 2.2e-16) dal 2019 al 2020, con una riduzione media di circa 0.356 che indica una perdita di copertura vegetale.
     \end{itemize}
 \end{itemize}
@@ -333,21 +345,30 @@ NDVI_diff_2025 <- NDVI_2025 - NDVI_2020
         \item t = -3679.7, df = 11438646, p-value < 2.2e-16
         \item 95 percent confidence interval: -0.3334739 - -0.3331188
         \item mean of x = 0.3163630, mean of y = 0.6496593
+        \newline
         \item NDVI è aumentato significativamente tra il 2020 e il 2025. La differenza media è di circa -0.333, con un'elevata significatività statistica (p-value < 2.2e-16).
     \end{itemize}
 \end{itemize}
 \end{frame}
 
+
 \section{Conclusioni}
-\begin{frame}{\textbf{Conclusioni}}
-\begin{itemize}
-    \item Gli incendi del 2019 hanno avuto un impatto significativo sulla copertura vegetale.
-    \item La ripresa vegetale è lenta ma evidente nel 2025.
-    \item Necessità di ulteriori studi per monitorare la ripresa a lungo termine.
-\end{itemize}
+\begin{frame}[fragile]{\textbf{Conclusioni}}
+\textbf{Impatto degli incendi:} Gli incendi del 2019 hanno provocato una drastica riduzione della copertura vegetale, come evidenziato dai valori di NDVI e DVI nel confronto tra il 2019 e il 2020 sia tramite PCA che Land Cover. Il t-test conferma che questa riduzione è statisticamente significativa (p-value < 2.2e-16).
 \end{frame}
 
-\section{Bibliografia}
+\begin{frame}[fragile]{\textbf{Conclusioni}}
+\textbf{Ripresa della vegetazione:} Dal 2020 al 2025 si osserva una graduale ripresa della vegetazione, con un aumento significativo dei valori medi di NDVI (incremento medio di 0.333), testimoniando un progressivo ritorno della salute ecologica dell'area.
+\end{frame}
+
+\begin{frame}[fragile]{\textbf{Conclusioni}}
+\textbf{Pattern spaziali:} L’analisi delle componenti principali (PCA) rivela i principali driver di cambiamento nella copertura vegetale, suggerendo che alcune aree del parco abbiano mostrato una resilienza maggiore rispetto ad altre.
+\end{frame}
+
+\section{Prospettive future}
+\begin{frame}[fragile]{\textbf{Prospettive future}}
+\textbf Dal 2020 al 2025 si osserva una graduale ripresa della vegetazione, con un aumento significativo dei valori medi di NDVI (incremento medio di 0.333), testimoniando un progressivo ritorno della salute ecologica dell'area. Tuttavia, la ripresa non è omogenea in tutte le zone.     
+\end{frame}
 
 \begin{frame}{}
 \centering
